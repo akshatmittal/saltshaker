@@ -1,14 +1,8 @@
 import { concat, encodeFunctionData, getAddress, keccak256, pad, toHex, type Hex } from "viem";
 
-import {
-  DEFAULT_SAFE_FACTORY,
-  DEFAULT_SAFE_FALLBACK_HANDLER,
-  DEFAULT_SAFE_PROXY_CREATION_CODE_HASH,
-  SAFE_SETUP_ABI,
-  ZERO_ADDRESS,
-} from "../constants";
+import { SAFE_SETUP_ABI } from "../constants";
 import type { MiningCandidate, PreparedSafeJob, SafeJobInput } from "../types";
-import { addressFromHash, countLeadingZeroNibbles, ensureAddress, hexToBytes, normalizeHex } from "../utils";
+import { addressFromHash, assert, countLeadingZeroNibbles, ensureAddress, hexToBytes, normalizeHex } from "../utils";
 
 export function encodeSafeInitializer(input: SafeJobInput): Hex {
   return encodeFunctionData({
@@ -17,12 +11,12 @@ export function encodeSafeInitializer(input: SafeJobInput): Hex {
     args: [
       input.owners.map((owner) => ensureAddress(owner, "Safe owner")),
       input.threshold,
-      input.to ?? ZERO_ADDRESS,
-      input.data ?? "0x",
-      input.fallbackHandler ?? DEFAULT_SAFE_FALLBACK_HANDLER,
-      input.paymentToken ?? ZERO_ADDRESS,
-      input.payment ?? 0n,
-      input.paymentReceiver ?? ZERO_ADDRESS,
+      ensureAddress(input.to, "Safe target"),
+      normalizeHex(input.data, "Safe data"),
+      ensureAddress(input.fallbackHandler, "Safe fallback handler"),
+      ensureAddress(input.paymentToken, "Safe payment token"),
+      input.payment,
+      ensureAddress(input.paymentReceiver, "Safe payment receiver"),
     ],
   });
 }
@@ -30,11 +24,9 @@ export function encodeSafeInitializer(input: SafeJobInput): Hex {
 export function prepareSafeJob(input: SafeJobInput): PreparedSafeJob {
   const initializer = encodeSafeInitializer(input);
   const initializerHash = keccak256(initializer);
-  const factory = ensureAddress(input.factory ?? DEFAULT_SAFE_FACTORY, "Safe factory");
-  const proxyCreationCodeHash = normalizeHex(
-    input.proxyCreationCodeHash ?? DEFAULT_SAFE_PROXY_CREATION_CODE_HASH,
-    "Safe proxy creation code hash",
-  );
+  const factory = ensureAddress(input.factory, "Safe factory");
+  const proxyCreationCodeHash = normalizeHex(input.proxyCreationCodeHash, "Safe proxy creation code hash");
+  assert(hexToBytes(proxyCreationCodeHash).length === 32, "Safe proxy creation code hash must be 32 bytes");
 
   return {
     protocol: "safe",

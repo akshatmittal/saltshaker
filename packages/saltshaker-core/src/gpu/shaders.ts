@@ -25,7 +25,10 @@ const COMMON_SHADER = [utilsShader, keccakShader, addressShader].join("\n");
 
 function assembleProtocolShaders(entrypointShader: string): Record<MatcherKind, string> {
   return Object.fromEntries(
-    MATCHER_KINDS.map((matcherKind) => [matcherKind, [COMMON_SHADER, matcherShaders[matcherKind], entrypointShader].join("\n")]),
+    MATCHER_KINDS.map((matcherKind) => [
+      matcherKind,
+      [COMMON_SHADER, matcherShaders[matcherKind], entrypointShader].join("\n"),
+    ]),
   ) as Record<MatcherKind, string>;
 }
 

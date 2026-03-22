@@ -13,6 +13,7 @@ import type {
   Create2BenchmarkOptions,
   Create2BenchmarkResult,
   MatcherKind,
+  MiningJob,
   PreparedAddressMatcher,
   PreparedMiningJob,
   WebGpuMiningSession,
@@ -42,7 +43,8 @@ interface DispatchResources {
 interface SessionInternals {
   listeners: Set<(state: MiningSessionState) => void>;
   state: MiningSessionState;
-  options: Required<Pick<WebGpuMiningSessionOptions, "dispatchX" | "dispatchY" | "maxResults">> & WebGpuMiningSessionOptions;
+  options: Required<Pick<WebGpuMiningSessionOptions, "dispatchX" | "dispatchY" | "maxResults">> &
+    WebGpuMiningSessionOptions;
   matcher: PreparedAddressMatcher;
   job: PreparedMiningJob;
   resources: GpuResources | null;
@@ -350,14 +352,15 @@ function destroyResources(resources: GpuResources | null): void {
 }
 
 export function createWebGpuMiningSession(
-  job: PreparedMiningJob,
+  job: MiningJob,
   matcherSpec: AddressMatcherSpec = DEFAULT_MATCHER_SPEC,
   options: WebGpuMiningSessionOptions = {},
 ): WebGpuMiningSession {
+  const preparedJob = prepareJob(job);
   const matcher = prepareMatcher(matcherSpec);
   const internals: SessionInternals = {
     listeners: new Set(),
-    state: initialState(job),
+    state: initialState(preparedJob),
     options: {
       ...options,
       dispatchX: options.dispatchX ?? DEFAULT_DISPATCH_X,
@@ -365,13 +368,13 @@ export function createWebGpuMiningSession(
       maxResults: options.maxResults ?? MAX_RESULTS,
     },
     matcher,
-    job,
+    job: preparedJob,
     resources: null,
     loopPromise: null,
     stopRequested: false,
     pauseRequested: false,
     startedAt: null,
-    currentNonce: job.startNonce,
+    currentNonce: preparedJob.startNonce,
   };
 
   return {
@@ -380,8 +383,8 @@ export function createWebGpuMiningSession(
         return;
       }
       if (internals.resources === null) {
-        internals.currentNonce = job.startNonce;
-        internals.state = initialState(job);
+        internals.currentNonce = preparedJob.startNonce;
+        internals.state = initialState(preparedJob);
       }
 
       internals.stopRequested = false;
@@ -423,9 +426,7 @@ export function createWebGpuMiningSession(
   };
 }
 
-export async function runCreate2Benchmark(
-  options: Create2BenchmarkOptions = {},
-): Promise<Create2BenchmarkResult> {
+export async function runCreate2Benchmark(options: Create2BenchmarkOptions = {}): Promise<Create2BenchmarkResult> {
   const dispatchX = options.dispatchX ?? DEFAULT_DISPATCH_X;
   const dispatchY = options.dispatchY ?? DEFAULT_DISPATCH_Y;
   const durationMs = options.durationMs ?? 10_000;
@@ -440,7 +441,11 @@ export async function runCreate2Benchmark(
 
   while (performance.now() - startedAt < durationMs) {
     const [nonceLow, nonceHigh] = splitBigIntToU32(currentNonce);
-    resources.device.queue.writeBuffer(resources.paramsBuffer, 0, toGpuBufferSource(new Uint32Array([nonceLow, nonceHigh, 0, 0])));
+    resources.device.queue.writeBuffer(
+      resources.paramsBuffer,
+      0,
+      toGpuBufferSource(new Uint32Array([nonceLow, nonceHigh, 0, 0])),
+    );
     await runDispatch(resources, dispatchX, dispatchY);
     resetResultsBuffer(resources);
     currentNonce += itemsPerDispatch;

@@ -24,11 +24,7 @@ export interface LeadingZerosMatcherSpec {
   value: number;
 }
 
-export type AddressMatcherSpec =
-  | PrefixMatcherSpec
-  | SuffixMatcherSpec
-  | ContainsMatcherSpec
-  | LeadingZerosMatcherSpec;
+export type AddressMatcherSpec = PrefixMatcherSpec | SuffixMatcherSpec | ContainsMatcherSpec | LeadingZerosMatcherSpec;
 
 export interface Create2JobInput {
   protocol: "create2";
@@ -43,15 +39,14 @@ export interface SafeJobInput {
   protocol: "safe";
   owners: Address[];
   threshold: bigint;
-  to?: Address;
-  data?: Hex;
-  fallbackHandler?: Address;
-  paymentToken?: Address;
-  payment?: bigint;
-  paymentReceiver?: Address;
-  singleton?: Address;
-  factory?: Address;
-  proxyCreationCodeHash?: Hex;
+  to: Address;
+  data: Hex;
+  fallbackHandler: Address;
+  paymentToken: Address;
+  payment: bigint;
+  paymentReceiver: Address;
+  factory: Address;
+  proxyCreationCodeHash: Hex;
   startNonce?: bigint;
 }
 

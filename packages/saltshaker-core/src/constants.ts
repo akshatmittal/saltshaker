@@ -4,12 +4,6 @@ import type { LeadingZerosMatcherSpec } from "./types";
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
 
-export const DEFAULT_SAFE_FACTORY = "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2" as const;
-export const DEFAULT_SAFE_SINGLETON = "0x3E5c63644E683549055b9Be8653de26E0B4CD36E" as const;
-export const DEFAULT_SAFE_FALLBACK_HANDLER = "0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4" as const;
-export const DEFAULT_SAFE_PROXY_CREATION_CODE_HASH =
-  "0xcaf2dc2f91b804b2fcf1ed3a965a1ff4404b840b80c124277b00a43b4634b2ce" as const;
-
 export const SAFE_SETUP_ABI = [
   {
     inputs: [

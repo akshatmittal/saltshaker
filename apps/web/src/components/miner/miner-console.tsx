@@ -5,10 +5,6 @@ import { Copy } from "lucide-react";
 import {
   checkWebGpuSupport,
   createWebGpuMiningSession,
-  DEFAULT_SAFE_FACTORY,
-  DEFAULT_SAFE_FALLBACK_HANDLER,
-  DEFAULT_SAFE_PROXY_CREATION_CODE_HASH,
-  prepareJob,
   STANDARDIZED_CREATE2_BENCHMARK_PRESET,
   type AddressMatcherSpec,
   type CheckWebGpuSupportResult,
@@ -29,6 +25,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 
 type Protocol = "create2" | "safe";
+
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
+const DEFAULT_SAFE_FACTORY = "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2" as const;
+const DEFAULT_SAFE_FALLBACK_HANDLER = "0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4" as const;
+const DEFAULT_SAFE_PROXY_CREATION_CODE_HASH =
+  "0xcaf2dc2f91b804b2fcf1ed3a965a1ff4404b840b80c124277b00a43b4634b2ce" as const;
 
 type Create2FormState = {
   deployer: string;
@@ -157,17 +159,19 @@ export function MinerConsole() {
       protocol: "safe",
       owners,
       threshold: BigInt(safeForm.threshold || "1"),
-      to: safeForm.to.trim() === "" ? undefined : (safeForm.to as `0x${string}`),
+      to: safeForm.to.trim() === "" ? ZERO_ADDRESS : (safeForm.to as `0x${string}`),
       data: normalizeHexInput(safeForm.data) ?? "0x",
-      fallbackHandler: safeForm.fallbackHandler.trim() === "" ? undefined : (safeForm.fallbackHandler as `0x${string}`),
-      paymentToken: safeForm.paymentToken.trim() === "" ? undefined : (safeForm.paymentToken as `0x${string}`),
+      fallbackHandler:
+        safeForm.fallbackHandler.trim() === ""
+          ? DEFAULT_SAFE_FALLBACK_HANDLER
+          : (safeForm.fallbackHandler as `0x${string}`),
+      paymentToken: safeForm.paymentToken.trim() === "" ? ZERO_ADDRESS : (safeForm.paymentToken as `0x${string}`),
       payment: BigInt(safeForm.payment || "0"),
-      paymentReceiver: safeForm.paymentReceiver.trim() === "" ? undefined : (safeForm.paymentReceiver as `0x${string}`),
-      factory: safeForm.factory.trim() === "" ? undefined : (safeForm.factory as `0x${string}`),
-      proxyCreationCodeHash:
-        safeForm.proxyCreationCodeHash.trim() === ""
-          ? undefined
-          : (normalizeHexInput(safeForm.proxyCreationCodeHash) as `0x${string}`),
+      paymentReceiver:
+        safeForm.paymentReceiver.trim() === "" ? ZERO_ADDRESS : (safeForm.paymentReceiver as `0x${string}`),
+      factory: safeForm.factory.trim() === "" ? DEFAULT_SAFE_FACTORY : (safeForm.factory as `0x${string}`),
+      proxyCreationCodeHash: (normalizeHexInput(safeForm.proxyCreationCodeHash) ??
+        DEFAULT_SAFE_PROXY_CREATION_CODE_HASH) as `0x${string}`,
       startNonce: BigInt(safeForm.startNonce || "0"),
     };
   }
@@ -198,9 +202,8 @@ export function MinerConsole() {
     }
 
     try {
-      const preparedJob = prepareJob(buildJob());
       sessionRef.current?.stop();
-      const session = createWebGpuMiningSession(preparedJob, buildMatcher());
+      const session = createWebGpuMiningSession(buildJob(), buildMatcher());
       sessionRef.current = session;
       attachSession(session);
       void session.start().catch((startError) => {

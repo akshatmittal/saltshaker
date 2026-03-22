@@ -30,9 +30,6 @@
       }
     }
   },
-  "dependencies": {
-    "ky": "^1.14.3"
-  },
   "peerDependencies": {
     "viem": "catalog:"
   },
