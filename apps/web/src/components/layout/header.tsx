@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Satellite, TrophyIcon, UserRoundIcon } from "lucide-react";
+import { Gauge, Satellite, Sparkles } from "lucide-react";
 
 import { useScroll } from "@/hooks/use-scroll";
 import { Button } from "@/components/ui/button";
@@ -10,16 +10,20 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   {
+    title: "Miner",
+    href: "/",
+    icon: Sparkles,
+  },
+  {
     title: "Benchmark",
     href: "/benchmark",
-    icon: TrophyIcon,
+    icon: Gauge,
   },
 ];
 
 export function Header() {
   const scrolled = useScroll(10);
   const pathname = usePathname();
-  const profileIsActive = pathname === "/profile";
 
   return (
     <header
@@ -63,17 +67,8 @@ export function Header() {
             })}
           </nav>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            asChild
-            variant={profileIsActive ? "secondary" : "ghost"}
-            className={cn("h-9 gap-2 px-3", profileIsActive && "text-primary")}
-          >
-            <Link href="/profile">
-              <UserRoundIcon className={cn("size-4", profileIsActive ? "text-primary" : "text-muted-foreground")} />
-              <span>Profile</span>
-            </Link>
-          </Button>
+        <div className="rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs text-muted-foreground">
+          GPU only
         </div>
       </nav>
     </header>

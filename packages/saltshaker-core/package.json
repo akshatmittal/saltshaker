@@ -30,13 +30,11 @@
       }
     }
   },
-  "dependencies": {
-    "ky": "^1.14.3"
-  },
   "peerDependencies": {
     "viem": "catalog:"
   },
   "devDependencies": {
+    "@webgpu/types": "^0.1.68",
     "@workspace/typescript-config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",
