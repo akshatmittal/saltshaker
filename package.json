@@ -1,0 +1,28 @@
+{
+  "name": "saltshaker-monorepo",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "build:app": "turbo build --filter='@workspace/demo'",
+    "build:lib": "turbo build --filter='!@workspace/*'",
+    "dev": "turbo dev",
+    "dev:lib": "turbo dev --filter='!@workspace/*'",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,mjs,md,json,css}\" && turbo format",
+    "typecheck": "turbo typecheck",
+    "clean": "turbo clean"
+  },
+  "devDependencies": {
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "turbo": "^2.8.20",
+    "typescript": "catalog:"
+  },
+  "packageManager": "pnpm@10.32.1",
+  "engines": {
+    "node": ">=24"
+  }
+}

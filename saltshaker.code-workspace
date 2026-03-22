@@ -1,0 +1,15 @@
+{
+  "folders": [
+    {
+      "name": "saltshaker-web",
+      "path": "apps/web",
+    },
+    {
+      "path": "packages/saltshaker-core",
+    },
+    {
+      "name": "workspace-root",
+      "path": ".",
+    },
+  ],
+}

@@ -1,0 +1,45 @@
+{
+  "name": "saltshaker",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "sideEffects": false,
+  "files": [
+    "dist/**",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsc --noEmit --watch --preserveWatchOutput",
+    "prepack": "pnpm run build",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo dist"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.mjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.mts",
+    "exports": {
+      ".": {
+        "import": "./dist/index.mjs",
+        "default": "./dist/index.mjs",
+        "types": "./dist/index.d.mts"
+      }
+    }
+  },
+  "dependencies": {
+    "ky": "^1.14.3"
+  },
+  "peerDependencies": {
+    "viem": "catalog:"
+  },
+  "devDependencies": {
+    "@workspace/typescript-config": "workspace:*",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "viem": "catalog:"
+  }
+}
