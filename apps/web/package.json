@@ -31,6 +31,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "recharts": "2.15.4",
+    "saltshaker": "workspace:*",
     "shadcn": "^4.1.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
@@ -40,6 +41,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@webgpu/types": "^0.1.68",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/node": "catalog:",
     "@types/react": "catalog:",

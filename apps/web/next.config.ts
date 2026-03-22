@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
   },
   webpack: (config) => {
     config.externals.push("pino-pretty", "lokijs", "encoding");
+    config.module.rules.push({
+      test: /\.wgsl$/i,
+      type: "asset/source",
+    });
     config.resolve.fallback = {
       fs: false,
       buffer: false,
