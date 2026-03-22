@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Copy } from "lucide-react";
 import {
   checkWebGpuSupport,
   createWebGpuMiningSession,
@@ -18,7 +19,14 @@ import {
 } from "saltshaker";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { EmptyState, HeroPanel, StatCard } from "@/components/miner/shared";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 
 type Protocol = "create2" | "safe";
 
@@ -51,10 +59,7 @@ const defaultCreate2: Create2FormState = {
 };
 
 const defaultSafe: SafeFormState = {
-  owners: [
-    "0x0000000000000000000000000000000000000001",
-    "0x0000000000000000000000000000000000000002",
-  ].join("\n"),
+  owners: ["0x0000000000000000000000000000000000000001", "0x0000000000000000000000000000000000000002"].join("\n"),
   threshold: "2",
   to: "",
   data: "0x",
@@ -73,8 +78,8 @@ type MatcherFormState = {
 };
 
 const defaultMatcher: MatcherFormState = {
-  type: "none",
-  value: "",
+  type: "leadingZeros",
+  value: "0",
 };
 
 export function MinerConsole() {
@@ -119,10 +124,6 @@ export function MinerConsole() {
   }
 
   function buildMatcher(): AddressMatcherSpec {
-    if (matcher.type === "none") {
-      return { type: "none" };
-    }
-
     if (matcher.type === "leadingZeros") {
       return {
         type: "leadingZeros",
@@ -158,12 +159,10 @@ export function MinerConsole() {
       threshold: BigInt(safeForm.threshold || "1"),
       to: safeForm.to.trim() === "" ? undefined : (safeForm.to as `0x${string}`),
       data: normalizeHexInput(safeForm.data) ?? "0x",
-      fallbackHandler:
-        safeForm.fallbackHandler.trim() === "" ? undefined : (safeForm.fallbackHandler as `0x${string}`),
+      fallbackHandler: safeForm.fallbackHandler.trim() === "" ? undefined : (safeForm.fallbackHandler as `0x${string}`),
       paymentToken: safeForm.paymentToken.trim() === "" ? undefined : (safeForm.paymentToken as `0x${string}`),
       payment: BigInt(safeForm.payment || "0"),
-      paymentReceiver:
-        safeForm.paymentReceiver.trim() === "" ? undefined : (safeForm.paymentReceiver as `0x${string}`),
+      paymentReceiver: safeForm.paymentReceiver.trim() === "" ? undefined : (safeForm.paymentReceiver as `0x${string}`),
       factory: safeForm.factory.trim() === "" ? undefined : (safeForm.factory as `0x${string}`),
       proxyCreationCodeHash:
         safeForm.proxyCreationCodeHash.trim() === ""
@@ -226,22 +225,25 @@ export function MinerConsole() {
   const paused = sessionState?.status === "paused";
 
   return (
-    <div className="flex flex-1 flex-col gap-6 py-8">
-      <section className="relative overflow-hidden rounded-3xl border border-border bg-[linear-gradient(135deg,rgba(17,94,89,0.08),rgba(251,191,36,0.10),rgba(15,23,42,0.02))] p-6 shadow-sm">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(13,148,136,0.14),transparent_36%)]" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+    <div className="flex flex-1 flex-col gap-4 py-8">
+      <HeroPanel>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl space-y-3">
-            <p className="text-sm font-medium uppercase tracking-[0.24em] text-muted-foreground">WebGPU Salt Miner</p>
+            <p className="text-sm font-medium tracking-[0.24em] text-muted-foreground uppercase">WebGPU Salt Miner</p>
             <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
               GPU-only CREATE2 and Safe mining, directly in the browser.
             </h1>
             <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Each dispatch scans 67,107,840 candidates on the GPU. The core keeps the browser path generic enough
-              for protocol adapters while the UI stays focused on CREATE2 and Safe.
+              Each dispatch scans 67,107,840 candidates on the GPU. The core keeps the browser path generic enough for
+              protocol adapters while the UI stays focused on CREATE2 and Safe.
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <StatCard label="GPU Status" value={support.supported ? "Ready" : "Unavailable"} accent={support.message} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <StatCard
+              label="GPU Status"
+              value={support.supported ? "Ready" : "Unavailable"}
+              accent={support.message}
+            />
             <StatCard
               label="Adapter"
               value={support.adapterLabel ?? "Unknown"}
@@ -249,289 +251,323 @@ export function MinerConsole() {
             />
           </div>
         </div>
-      </section>
+      </HeroPanel>
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
-        <div className="space-y-6">
-          <Panel title="Protocol" eyebrow="Preset">
-            <div className="flex gap-2">
-              <Button variant={protocol === "create2" ? "default" : "outline"} onClick={() => setProtocol("create2")}>
-                CREATE2
-              </Button>
-              <Button variant={protocol === "safe" ? "default" : "outline"} onClick={() => setProtocol("safe")}>
-                Safe
-              </Button>
-            </div>
-            {protocol === "create2" ? (
-              <div className="grid gap-4">
-                <Field
-                  label="Deployer / Factory"
-                  value={create2Form.deployer}
-                  onChange={(value) => updateCreate2("deployer", value)}
-                />
-                <Field
-                  label="Fixed Salt Prefix"
-                  hint="Exactly 24 bytes. The miner scans the final 8 bytes as the nonce window."
-                  value={create2Form.fixedSaltPrefix}
-                  onChange={(value) => updateCreate2("fixedSaltPrefix", value)}
-                />
-                <Field
-                  label="Init Code Hash"
-                  value={create2Form.initCodeHash}
-                  onChange={(value) => updateCreate2("initCodeHash", value)}
-                />
-                <Field
-                  label="Start Nonce"
-                  value={create2Form.startNonce}
-                  onChange={(value) => updateCreate2("startNonce", value)}
-                />
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                <TextAreaField
-                  label="Owners"
-                  hint="One address per line or comma-separated."
-                  rows={4}
-                  value={safeForm.owners}
-                  onChange={(value) => updateSafe("owners", value)}
-                />
-                <Field label="Threshold" value={safeForm.threshold} onChange={(value) => updateSafe("threshold", value)} />
-                <Field label="Factory" value={safeForm.factory} onChange={(value) => updateSafe("factory", value)} />
-                <Field
-                  label="Proxy Creation Code Hash"
-                  value={safeForm.proxyCreationCodeHash}
-                  onChange={(value) => updateSafe("proxyCreationCodeHash", value)}
-                />
-                <Field
-                  label="Fallback Handler"
-                  value={safeForm.fallbackHandler}
-                  onChange={(value) => updateSafe("fallbackHandler", value)}
-                />
-                <Field label="To" value={safeForm.to} onChange={(value) => updateSafe("to", value)} />
-                <Field label="Data" value={safeForm.data} onChange={(value) => updateSafe("data", value)} />
-                <Field
-                  label="Payment Token"
-                  value={safeForm.paymentToken}
-                  onChange={(value) => updateSafe("paymentToken", value)}
-                />
-                <Field label="Payment" value={safeForm.payment} onChange={(value) => updateSafe("payment", value)} />
-                <Field
-                  label="Payment Receiver"
-                  value={safeForm.paymentReceiver}
-                  onChange={(value) => updateSafe("paymentReceiver", value)}
-                />
-                <Field
-                  label="Start Nonce"
-                  value={safeForm.startNonce}
-                  onChange={(value) => updateSafe("startNonce", value)}
-                />
-              </div>
-            )}
-          </Panel>
-
-          <Panel title="Matcher" eyebrow="Filters">
-            <div className="grid gap-4">
-              <label className="grid gap-2">
-                <span className="text-sm font-medium text-foreground">Matcher Type</span>
-                <NativeSelect
-                  className="w-full"
-                  value={matcher.type}
-                  onChange={(event) => updateMatcher("type", event.target.value as MatcherKind)}
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardDescription>Preset</CardDescription>
+              <CardTitle>Protocol</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Button
+                  variant={protocol === "create2" ? "default" : "outline"}
+                  onClick={() => setProtocol("create2")}
                 >
-                  <NativeSelectOption value="none">Best address only</NativeSelectOption>
-                  <NativeSelectOption value="prefix">Prefix</NativeSelectOption>
-                  <NativeSelectOption value="suffix">Suffix</NativeSelectOption>
-                  <NativeSelectOption value="contains">Contains</NativeSelectOption>
-                  <NativeSelectOption value="leadingZeros">Leading zeros</NativeSelectOption>
-                </NativeSelect>
-              </label>
-              {matcher.type !== "none" ? (
-                <Field
-                  label={matcher.type === "leadingZeros" ? "Minimum Leading Zero Nibbles" : "Matcher Value"}
-                  hint={
-                    matcher.type === "leadingZeros"
-                      ? "Whole number of leading zero hex nibbles."
-                      : "Hex string, with or without 0x prefix."
-                  }
-                  value={matcher.value}
-                  onChange={(value) => updateMatcher("value", value)}
-                />
-              ) : null}
-            </div>
-          </Panel>
+                  CREATE2
+                </Button>
+                <Button
+                  variant={protocol === "safe" ? "default" : "outline"}
+                  onClick={() => setProtocol("safe")}
+                >
+                  Safe
+                </Button>
+              </div>
+              <Separator />
+              {protocol === "create2" ? (
+                <div className="grid gap-4">
+                  <Field>
+                    <FieldLabel>Deployer / Factory</FieldLabel>
+                    <Input
+                      value={create2Form.deployer}
+                      onChange={(event) => updateCreate2("deployer", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Fixed Salt Prefix</FieldLabel>
+                    <Input
+                      value={create2Form.fixedSaltPrefix}
+                      onChange={(event) => updateCreate2("fixedSaltPrefix", event.target.value)}
+                      className="font-mono"
+                    />
+                    <FieldDescription>
+                      Exactly 24 bytes. The miner scans the final 8 bytes as the nonce window.
+                    </FieldDescription>
+                  </Field>
+                  <Field>
+                    <FieldLabel>Init Code Hash</FieldLabel>
+                    <Input
+                      value={create2Form.initCodeHash}
+                      onChange={(event) => updateCreate2("initCodeHash", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Start Nonce</FieldLabel>
+                    <Input
+                      value={create2Form.startNonce}
+                      onChange={(event) => updateCreate2("startNonce", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  <Field>
+                    <FieldLabel>Owners</FieldLabel>
+                    <Textarea
+                      rows={4}
+                      value={safeForm.owners}
+                      onChange={(event) => updateSafe("owners", event.target.value)}
+                      className="font-mono"
+                    />
+                    <FieldDescription>One address per line or comma-separated.</FieldDescription>
+                  </Field>
+                  <Field>
+                    <FieldLabel>Threshold</FieldLabel>
+                    <Input
+                      value={safeForm.threshold}
+                      onChange={(event) => updateSafe("threshold", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Factory</FieldLabel>
+                    <Input
+                      value={safeForm.factory}
+                      onChange={(event) => updateSafe("factory", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Proxy Creation Code Hash</FieldLabel>
+                    <Input
+                      value={safeForm.proxyCreationCodeHash}
+                      onChange={(event) => updateSafe("proxyCreationCodeHash", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Fallback Handler</FieldLabel>
+                    <Input
+                      value={safeForm.fallbackHandler}
+                      onChange={(event) => updateSafe("fallbackHandler", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>To</FieldLabel>
+                    <Input
+                      value={safeForm.to}
+                      onChange={(event) => updateSafe("to", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Data</FieldLabel>
+                    <Input
+                      value={safeForm.data}
+                      onChange={(event) => updateSafe("data", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Payment Token</FieldLabel>
+                    <Input
+                      value={safeForm.paymentToken}
+                      onChange={(event) => updateSafe("paymentToken", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Payment</FieldLabel>
+                    <Input
+                      value={safeForm.payment}
+                      onChange={(event) => updateSafe("payment", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Payment Receiver</FieldLabel>
+                    <Input
+                      value={safeForm.paymentReceiver}
+                      onChange={(event) => updateSafe("paymentReceiver", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Start Nonce</FieldLabel>
+                    <Input
+                      value={safeForm.startNonce}
+                      onChange={(event) => updateSafe("startNonce", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-          <Panel title="Controls" eyebrow="Session">
-            <div className="flex flex-wrap gap-3">
-              <Button onClick={handleStart} disabled={!support.supported}>
-                {paused ? "Resume" : "Start"}
-              </Button>
-              <Button variant="outline" onClick={handlePause} disabled={!running}>
-                Pause
-              </Button>
-              <Button variant="outline" onClick={handleStop} disabled={sessionRef.current === null}>
-                Stop
-              </Button>
-            </div>
-            {error !== null ? <p className="text-sm text-destructive">{error}</p> : null}
-            {!support.supported ? (
-              <p className="text-sm text-muted-foreground">
-                This app does not fall back to CPU mining. It requires a browser with WebGPU enabled.
-              </p>
-            ) : null}
-          </Panel>
+          <Card>
+            <CardHeader>
+              <CardDescription>Filters</CardDescription>
+              <CardTitle>Matcher</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4">
+                <Field>
+                  <FieldLabel>Matcher Type</FieldLabel>
+                  <NativeSelect
+                    className="w-full"
+                    value={matcher.type}
+                    onChange={(event) => updateMatcher("type", event.target.value as MatcherKind)}
+                  >
+                    <NativeSelectOption value="prefix">Prefix</NativeSelectOption>
+                    <NativeSelectOption value="suffix">Suffix</NativeSelectOption>
+                    <NativeSelectOption value="contains">Contains</NativeSelectOption>
+                    <NativeSelectOption value="leadingZeros">Leading zeros</NativeSelectOption>
+                  </NativeSelect>
+                </Field>
+                <Field>
+                  <FieldLabel>
+                    {matcher.type === "leadingZeros" ? "Minimum Leading Zero Nibbles" : "Matcher Value"}
+                  </FieldLabel>
+                  <Input
+                    value={matcher.value}
+                    onChange={(event) => updateMatcher("value", event.target.value)}
+                    className="font-mono"
+                  />
+                  <FieldDescription>
+                    {matcher.type === "leadingZeros"
+                      ? "Whole number of leading zero hex nibbles. Use 0 for no filtering."
+                      : "Hex string, with or without 0x prefix."}
+                  </FieldDescription>
+                </Field>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardDescription>Session</CardDescription>
+              <CardTitle>Controls</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  onClick={handleStart}
+                  disabled={!support.supported}
+                >
+                  {paused ? "Resume" : "Start"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handlePause}
+                  disabled={!running}
+                >
+                  Pause
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleStop}
+                  disabled={sessionRef.current === null}
+                >
+                  Stop
+                </Button>
+              </div>
+              <Separator />
+              {error !== null ? <p className="text-sm text-destructive">{error}</p> : null}
+              {!support.supported ? (
+                <p className="text-sm text-muted-foreground">
+                  This app does not fall back to CPU mining. It requires a browser with WebGPU enabled.
+                </p>
+              ) : null}
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="space-y-6">
-          <Panel title="Live Session" eyebrow="Telemetry">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <StatCard label="Status" value={sessionState?.status ?? "idle"} accent={sessionState?.error ?? "No errors"} />
-              <StatCard
-                label="Hashrate"
-                value={formatHashrate(sessionState?.hashrate ?? 0)}
-                accent={`${formatBigInt(sessionState?.totalHashes ?? 0n)} hashes`}
-              />
-              <StatCard
-                label="Elapsed"
-                value={formatDuration(sessionState?.elapsedMs ?? 0)}
-                accent={`Dispatches ${sessionState?.dispatchesCompleted ?? 0}`}
-              />
-              <StatCard
-                label="Window Start"
-                value={(sessionState?.currentWindowStart ?? 0n).toString()}
-                accent={sessionState?.adapterLabel ?? support.adapterLabel ?? "Adapter unknown"}
-              />
-            </div>
-          </Panel>
-
-          <Panel title="Ranked Results" eyebrow="Top 25">
-            {topResults.length === 0 ? (
-              <EmptyState>
-                No GPU-verified winners yet. Start mining to populate the ranked address table.
-              </EmptyState>
-            ) : (
-              <div className="overflow-hidden rounded-2xl border border-border">
-                <div className="grid grid-cols-[88px_minmax(0,1fr)_132px_108px] gap-3 border-b border-border bg-muted/40 px-4 py-3 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                  <span>Zeros</span>
-                  <span>Address</span>
-                  <span>Nonce</span>
-                  <span>Salt</span>
-                </div>
-                <div className="divide-y divide-border/70">
-                  {topResults.map((result) => (
-                    <div
-                      key={`${result.address}-${result.nonce.toString()}`}
-                      className="grid grid-cols-[88px_minmax(0,1fr)_132px_108px] gap-3 px-4 py-3 text-sm"
-                    >
-                      <span className="font-medium text-foreground">{result.leadingZeroNibbles}</span>
-                      <div className="min-w-0">
-                        <p className="truncate font-mono text-xs text-foreground sm:text-sm">{result.address}</p>
-                        <p className="truncate font-mono text-[11px] text-muted-foreground">{result.salt}</p>
-                      </div>
-                      <span className="truncate font-mono text-xs text-muted-foreground">{result.nonce.toString()}</span>
-                      <button
-                        type="button"
-                        className="text-left text-xs font-medium text-primary underline-offset-4 hover:underline"
-                        onClick={() => void navigator.clipboard.writeText(result.address)}
-                      >
-                        Copy
-                      </button>
-                    </div>
-                  ))}
-                </div>
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardDescription>Telemetry</CardDescription>
+              <CardTitle>Live Session</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <StatCard
+                  label="Status"
+                  value={sessionState?.status ?? "idle"}
+                  accent={sessionState?.error ?? "No errors"}
+                />
+                <StatCard
+                  label="Hashrate"
+                  value={formatHashrate(sessionState?.hashrate ?? 0)}
+                  accent={`${formatBigInt(sessionState?.totalHashes ?? 0n)} hashes`}
+                />
+                <StatCard
+                  label="Elapsed"
+                  value={formatDuration(sessionState?.elapsedMs ?? 0)}
+                  accent={`Dispatches ${sessionState?.dispatchesCompleted ?? 0}`}
+                />
+                <StatCard
+                  label="Window Start"
+                  value={(sessionState?.currentWindowStart ?? 0n).toString()}
+                  accent={sessionState?.adapterLabel ?? support.adapterLabel ?? "Adapter unknown"}
+                />
               </div>
-            )}
-          </Panel>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardDescription>Top 25</CardDescription>
+              <CardTitle>Ranked Results</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {topResults.length === 0 ? (
+                <EmptyState>No GPU-verified winners yet. Start mining to populate the ranked address table.</EmptyState>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Zeros</TableHead>
+                      <TableHead>Result</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {topResults.map((result) => (
+                      <TableRow key={`${result.address}-${result.nonce.toString()}`}>
+                        <TableCell className="font-medium">{result.leadingZeroNibbles}</TableCell>
+                        <TableCell className="min-w-0">
+                          <div className="">
+                            <div className="flex min-w-0 items-center gap-2">
+                              <p className="truncate font-mono">{result.address}</p>
+                              <CopyValueButton
+                                value={result.address}
+                                label="Copy address"
+                              />
+                            </div>
+                            <div className="flex min-w-0 items-center gap-2">
+                              <p className="truncate font-mono text-muted-foreground">{result.salt}</p>
+                              <CopyValueButton
+                                value={result.salt}
+                                label="Copy salt"
+                              />
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </section>
-    </div>
-  );
-}
-
-function Panel({
-  title,
-  eyebrow,
-  children,
-}: {
-  title: string;
-  eyebrow: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
-      <div className="mb-4 space-y-1">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">{eyebrow}</p>
-        <h2 className="text-xl font-semibold text-foreground">{title}</h2>
-      </div>
-      <div className="space-y-4">{children}</div>
-    </section>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  hint,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  hint?: string;
-}) {
-  return (
-    <label className="grid gap-2">
-      <span className="text-sm font-medium text-foreground">{label}</span>
-      <input
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-11 rounded-2xl border border-input bg-background px-3 font-mono text-sm outline-none transition focus:border-primary"
-      />
-      {hint ? <span className="text-xs text-muted-foreground">{hint}</span> : null}
-    </label>
-  );
-}
-
-function TextAreaField({
-  label,
-  value,
-  onChange,
-  rows,
-  hint,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  rows: number;
-  hint?: string;
-}) {
-  return (
-    <label className="grid gap-2">
-      <span className="text-sm font-medium text-foreground">{label}</span>
-      <textarea
-        rows={rows}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="rounded-2xl border border-input bg-background px-3 py-3 font-mono text-sm outline-none transition focus:border-primary"
-      />
-      {hint ? <span className="text-xs text-muted-foreground">{hint}</span> : null}
-    </label>
-  );
-}
-
-function StatCard({ label, value, accent }: { label: string; value: string; accent: string }) {
-  return (
-    <div className="rounded-2xl border border-border/80 bg-background/80 p-4 backdrop-blur-sm">
-      <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-      <p className="mt-2 text-lg font-semibold text-foreground">{value}</p>
-      <p className="mt-1 text-xs text-muted-foreground">{accent}</p>
-    </div>
-  );
-}
-
-function EmptyState({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-2xl border border-dashed border-border bg-muted/30 px-4 py-10 text-center text-sm text-muted-foreground">
-      {children}
     </div>
   );
 }
@@ -553,4 +589,18 @@ function formatDuration(durationMs: number): string {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${minutes}m ${seconds}s`;
+}
+
+function CopyValueButton({ value, label }: { value: string; label: string }) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-xs"
+      aria-label={label}
+      onClick={() => void navigator.clipboard.writeText(value)}
+    >
+      <Copy />
+    </Button>
+  );
 }

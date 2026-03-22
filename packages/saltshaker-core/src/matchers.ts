@@ -3,8 +3,17 @@ import type { Address } from "viem";
 import type { AddressMatcherSpec, MiningCandidate, PreparedAddressMatcher } from "./types";
 import { assert, compareAddressNumeric, countLeadingZeroNibbles, hexToBytes, normalizeHex } from "./utils";
 
+const EMPTY_MATCHER_HEX = "0x";
+const EMPTY_MATCHER_BYTES = new Uint8Array();
+
+const HEX_MATCHER_LABELS = {
+  prefix: "Prefix",
+  suffix: "Suffix",
+  contains: "Contains",
+} as const;
+
 function prepareHexMatcher(type: "prefix" | "suffix" | "contains", value: string): PreparedAddressMatcher {
-  const label = type === "contains" ? "Contains" : type === "prefix" ? "Prefix" : "Suffix";
+  const label = HEX_MATCHER_LABELS[type];
   const valueHex = normalizeHex(value, label);
   const valueBytes = hexToBytes(valueHex);
   assert(valueBytes.length <= 20, `${label} matcher must be 20 bytes or shorter`);
@@ -17,7 +26,16 @@ function prepareHexMatcher(type: "prefix" | "suffix" | "contains", value: string
   };
 }
 
-export function prepareMatcher(spec: AddressMatcherSpec = {}): PreparedAddressMatcher {
+function createLeadingZerosMatcher(leadingZeroNibbles: number): PreparedAddressMatcher {
+  return {
+    type: "leadingZeros",
+    valueHex: EMPTY_MATCHER_HEX,
+    valueBytes: EMPTY_MATCHER_BYTES,
+    leadingZeroNibbles,
+  };
+}
+
+export function prepareMatcher(spec: AddressMatcherSpec = { type: "leadingZeros", value: 0 }): PreparedAddressMatcher {
   switch (spec.type) {
     case "prefix":
       return prepareHexMatcher("prefix", spec.value);
@@ -27,34 +45,21 @@ export function prepareMatcher(spec: AddressMatcherSpec = {}): PreparedAddressMa
       return prepareHexMatcher("contains", spec.value);
     case "leadingZeros":
       assert(Number.isFinite(spec.value), "Leading zero matcher must be a finite number");
-      return {
-        type: "leadingZeros",
-        valueHex: "0x",
-        valueBytes: new Uint8Array(),
-        leadingZeroNibbles: Math.min(40, Math.max(0, Math.floor(spec.value))),
-      };
-    case "none":
-    default:
-      return {
-        type: "none",
-        valueHex: "0x",
-        valueBytes: new Uint8Array(),
-        leadingZeroNibbles: 0,
-      };
+      return createLeadingZerosMatcher(Math.min(40, Math.max(0, Math.floor(spec.value))));
   }
 }
 
 export function matchesAddress(address: Address, matcher: PreparedAddressMatcher): boolean {
   const lower = address.slice(2).toLowerCase();
+  const value = matcher.valueHex.slice(2).toLowerCase();
+
   switch (matcher.type) {
-    case "none":
-      return true;
     case "prefix":
-      return lower.startsWith(matcher.valueHex.slice(2).toLowerCase());
+      return lower.startsWith(value);
     case "suffix":
-      return lower.endsWith(matcher.valueHex.slice(2).toLowerCase());
+      return lower.endsWith(value);
     case "contains":
-      return lower.includes(matcher.valueHex.slice(2).toLowerCase());
+      return lower.includes(value);
     case "leadingZeros":
       return countLeadingZeroNibbles(address) >= matcher.leadingZeroNibbles;
   }

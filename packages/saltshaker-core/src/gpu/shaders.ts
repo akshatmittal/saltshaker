@@ -7,37 +7,30 @@ import create2EntrypointShader from "./shaders/entrypoints/create2.wgsl";
 import safeEntrypointShader from "./shaders/entrypoints/safe.wgsl";
 import containsMatcherShader from "./shaders/matchers/contains.wgsl";
 import leadingZerosMatcherShader from "./shaders/matchers/leading-zeros.wgsl";
-import noneMatcherShader from "./shaders/matchers/none.wgsl";
 import prefixMatcherShader from "./shaders/matchers/prefix.wgsl";
 import suffixMatcherShader from "./shaders/matchers/suffix.wgsl";
 
 import type { MatcherKind } from "../types";
 
+const MATCHER_KINDS = ["prefix", "suffix", "contains", "leadingZeros"] as const satisfies readonly MatcherKind[];
+
 const matcherShaders: Record<MatcherKind, string> = {
-  none: noneMatcherShader,
   prefix: prefixMatcherShader,
   suffix: suffixMatcherShader,
   contains: containsMatcherShader,
   leadingZeros: leadingZerosMatcherShader,
 };
 
-const commonShaders = [utilsShader, keccakShader, addressShader];
+const COMMON_SHADER = [utilsShader, keccakShader, addressShader].join("\n");
 
-const create2Shaders: Record<MatcherKind, string> = {
-  none: [...commonShaders, matcherShaders.none, create2EntrypointShader].join("\n"),
-  prefix: [...commonShaders, matcherShaders.prefix, create2EntrypointShader].join("\n"),
-  suffix: [...commonShaders, matcherShaders.suffix, create2EntrypointShader].join("\n"),
-  contains: [...commonShaders, matcherShaders.contains, create2EntrypointShader].join("\n"),
-  leadingZeros: [...commonShaders, matcherShaders.leadingZeros, create2EntrypointShader].join("\n"),
-};
+function assembleProtocolShaders(entrypointShader: string): Record<MatcherKind, string> {
+  return Object.fromEntries(
+    MATCHER_KINDS.map((matcherKind) => [matcherKind, [COMMON_SHADER, matcherShaders[matcherKind], entrypointShader].join("\n")]),
+  ) as Record<MatcherKind, string>;
+}
 
-const safeShaders: Record<MatcherKind, string> = {
-  none: [...commonShaders, matcherShaders.none, safeEntrypointShader].join("\n"),
-  prefix: [...commonShaders, matcherShaders.prefix, safeEntrypointShader].join("\n"),
-  suffix: [...commonShaders, matcherShaders.suffix, safeEntrypointShader].join("\n"),
-  contains: [...commonShaders, matcherShaders.contains, safeEntrypointShader].join("\n"),
-  leadingZeros: [...commonShaders, matcherShaders.leadingZeros, safeEntrypointShader].join("\n"),
-};
+const create2Shaders = assembleProtocolShaders(create2EntrypointShader);
+const safeShaders = assembleProtocolShaders(safeEntrypointShader);
 
 export function getMiningShader(protocol: "create2" | "safe", matcherKind: MatcherKind): string {
   return protocol === "create2" ? create2Shaders[matcherKind] : safeShaders[matcherKind];

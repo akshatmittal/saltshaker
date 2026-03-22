@@ -2,11 +2,7 @@ import type { Address, Hex } from "viem";
 
 export type JobProtocol = "create2" | "safe";
 
-export type MatcherKind = "none" | "prefix" | "suffix" | "contains" | "leadingZeros";
-
-export interface NoneMatcherSpec {
-  type?: "none";
-}
+export type MatcherKind = "prefix" | "suffix" | "contains" | "leadingZeros";
 
 export interface PrefixMatcherSpec {
   type: "prefix";
@@ -29,7 +25,6 @@ export interface LeadingZerosMatcherSpec {
 }
 
 export type AddressMatcherSpec =
-  | NoneMatcherSpec
   | PrefixMatcherSpec
   | SuffixMatcherSpec
   | ContainsMatcherSpec
@@ -141,11 +136,8 @@ export interface WebGpuMiningSession {
   subscribe(listener: (state: MiningSessionState) => void): () => void;
 }
 
-export type BenchmarkVariant = "kernel" | "vanity";
-
 export interface Create2BenchmarkOptions {
   durationMs?: number;
-  variant?: BenchmarkVariant;
   dispatchX?: number;
   dispatchY?: number;
   powerPreference?: GPUPowerPreference;
@@ -153,7 +145,6 @@ export interface Create2BenchmarkOptions {
 
 export interface Create2BenchmarkResult {
   preset: "create2-standard-v1";
-  variant: BenchmarkVariant;
   durationMs: number;
   totalHashes: bigint;
   hashrate: number;

@@ -19,7 +19,6 @@ export { computeSafeSalt, deriveSafeCandidate, encodeSafeInitializer, prepareSaf
 export { checkWebGpuSupport, createWebGpuMiningSession, runCreate2Benchmark } from "./gpu/session";
 export type {
   AddressMatcherSpec,
-  BenchmarkVariant,
   CheckWebGpuSupportResult,
   Create2BenchmarkOptions,
   Create2BenchmarkResult,

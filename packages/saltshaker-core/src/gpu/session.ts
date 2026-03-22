@@ -54,6 +54,9 @@ interface SessionInternals {
 }
 
 const RESULT_WORDS = 8;
+const LEADING_ZERO_MATCHER_WORDS = 4;
+const PATTERN_MATCHER_WORDS = 9;
+const DEFAULT_MATCHER_SPEC: AddressMatcherSpec = { type: "leadingZeros", value: 0 };
 
 function toGpuBufferSource(words: Uint32Array): ArrayBufferView<ArrayBuffer> {
   const buffer = new ArrayBuffer(words.byteLength);
@@ -117,77 +120,50 @@ function setState(internals: SessionInternals, partial: Partial<MiningSessionSta
   notify(internals.state, internals.listeners);
 }
 
-function buildConstants(job: PreparedMiningJob, matcher: PreparedAddressMatcher): Uint32Array {
-  if (job.protocol === "create2") {
-    return buildCreate2Constants(job, matcher);
-  }
-
-  return buildSafeConstants(job, matcher);
-}
-
 function buildMatcherPatternBlock(matcher: PreparedAddressMatcher): Uint32Array {
-  const out = new Uint32Array(9);
+  const out = new Uint32Array(PATTERN_MATCHER_WORDS);
   out.set(packBytesToWordsLE(matcher.valueBytes, 5), 0);
   out[5] = matcher.valueBytes.length;
   return out;
 }
 
-function buildCreate2Constants(job: Extract<PreparedMiningJob, { protocol: "create2" }>, matcher: PreparedAddressMatcher): Uint32Array {
-  const base = new Uint32Array(19);
-  base.set(packBytesToWordsLE(job.deployerBytes, 5), 0);
-  base.set(packBytesToWordsLE(job.fixedSaltPrefixBytes, 6), 5);
-  base.set(packBytesToWordsLE(job.initCodeHashBytes, 8), 11);
-
+function buildMatcherBlock(matcher: PreparedAddressMatcher): Uint32Array {
   switch (matcher.type) {
-    case "none": {
-      const out = new Uint32Array(23);
-      out.set(base, 0);
-      return out;
-    }
     case "prefix":
     case "suffix":
-    case "contains": {
-      const out = new Uint32Array(28);
-      out.set(base, 0);
-      out.set(buildMatcherPatternBlock(matcher), 19);
-      return out;
-    }
+    case "contains":
+      return buildMatcherPatternBlock(matcher);
     case "leadingZeros": {
-      const out = new Uint32Array(23);
-      out.set(base, 0);
-      out[19] = matcher.leadingZeroNibbles;
+      const out = new Uint32Array(LEADING_ZERO_MATCHER_WORDS);
+      out[0] = matcher.leadingZeroNibbles;
       return out;
     }
   }
 }
 
-function buildSafeConstants(job: Extract<PreparedMiningJob, { protocol: "safe" }>, matcher: PreparedAddressMatcher): Uint32Array {
+function buildBaseConstants(job: PreparedMiningJob): Uint32Array {
+  if (job.protocol === "create2") {
+    const base = new Uint32Array(19);
+    base.set(packBytesToWordsLE(job.deployerBytes, 5), 0);
+    base.set(packBytesToWordsLE(job.fixedSaltPrefixBytes, 6), 5);
+    base.set(packBytesToWordsLE(job.initCodeHashBytes, 8), 11);
+    return base;
+  }
+
   const base = new Uint32Array(21);
   base.set(packBytesToWordsLE(job.initializerHashBytes, 8), 0);
   base.set(packBytesToWordsLE(job.factoryBytes, 5), 8);
   base.set(packBytesToWordsLE(job.proxyCreationCodeHashBytes, 8), 13);
+  return base;
+}
 
-  switch (matcher.type) {
-    case "none": {
-      const out = new Uint32Array(25);
-      out.set(base, 0);
-      return out;
-    }
-    case "prefix":
-    case "suffix":
-    case "contains": {
-      const out = new Uint32Array(30);
-      out.set(base, 0);
-      out.set(buildMatcherPatternBlock(matcher), 21);
-      return out;
-    }
-    case "leadingZeros": {
-      const out = new Uint32Array(25);
-      out.set(base, 0);
-      out[21] = matcher.leadingZeroNibbles;
-      return out;
-    }
-  }
+function buildConstants(job: PreparedMiningJob, matcher: PreparedAddressMatcher): Uint32Array {
+  const base = buildBaseConstants(job);
+  const matcherBlock = buildMatcherBlock(matcher);
+  const out = new Uint32Array(base.length + matcherBlock.length);
+  out.set(base, 0);
+  out.set(matcherBlock, base.length);
+  return out;
 }
 
 function getShaderForMatcher(job: PreparedMiningJob, matcherKind: MatcherKind): string {
@@ -375,7 +351,7 @@ function destroyResources(resources: GpuResources | null): void {
 
 export function createWebGpuMiningSession(
   job: PreparedMiningJob,
-  matcherSpec: AddressMatcherSpec = {},
+  matcherSpec: AddressMatcherSpec = DEFAULT_MATCHER_SPEC,
   options: WebGpuMiningSessionOptions = {},
 ): WebGpuMiningSession {
   const matcher = prepareMatcher(matcherSpec);
@@ -478,7 +454,6 @@ export async function runCreate2Benchmark(
 
   return {
     preset: STANDARDIZED_CREATE2_BENCHMARK_PRESET.version,
-    variant: "kernel",
     durationMs: elapsedMs,
     totalHashes,
     hashrate,
