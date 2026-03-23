@@ -121,6 +121,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: radial-gradient(oklch(0.5 0 0 / 0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .dark body {
+    background-image: radial-gradient(oklch(1 0 0 / 0.04) 1px, transparent 1px);
   }
   html {
     @apply font-sans;

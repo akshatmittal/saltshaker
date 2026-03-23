@@ -1,20 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   checkWebGpuSupport,
-  runCreate2Benchmark,
+  createWebGpuMiningSession,
   STANDARDIZED_CREATE2_BENCHMARK_PRESET,
   type CheckWebGpuSupportResult,
-  type Create2BenchmarkResult,
+  type MiningSessionState,
+  type WebGpuMiningSession,
 } from "saltshaker";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { EmptyState, HeroPanel, ReadOnlyField, StatCard } from "@/components/miner/shared";
+import { ReadOnlyField, TelemetryCard } from "@/components/miner/shared";
 
 export function BenchmarkConsole() {
   const [support, setSupport] = useState<CheckWebGpuSupportResult>({
@@ -22,66 +22,75 @@ export function BenchmarkConsole() {
     message: "Checking WebGPU support...",
   });
   const [durationMs, setDurationMs] = useState("10000");
-  const [running, setRunning] = useState(false);
-  const [result, setResult] = useState<Create2BenchmarkResult | null>(null);
+  const [sessionState, setSessionState] = useState<MiningSessionState | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const sessionRef = useRef<WebGpuMiningSession | null>(null);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     checkWebGpuSupport().then(setSupport);
+    return () => {
+      unsubscribeRef.current?.();
+      sessionRef.current?.stop();
+      if (timerRef.current !== null) clearTimeout(timerRef.current);
+    };
   }, []);
 
-  async function handleRun() {
+  function handleRun() {
     setError(null);
-    setResult(null);
 
     if (!support.supported) {
       setError("Benchmark mode requires WebGPU. There is no CPU fallback.");
       return;
     }
 
-    setRunning(true);
-    const normalizedDuration = Number.parseInt(durationMs, 10);
-
     try {
-      const benchmark = await runCreate2Benchmark({ durationMs: normalizedDuration });
-      setResult(benchmark);
-    } catch (benchmarkError) {
-      setError(benchmarkError instanceof Error ? benchmarkError.message : "Benchmark failed");
-    } finally {
-      setRunning(false);
+      sessionRef.current?.stop();
+      if (timerRef.current !== null) clearTimeout(timerRef.current);
+
+      const session = createWebGpuMiningSession(
+        STANDARDIZED_CREATE2_BENCHMARK_PRESET.job,
+        STANDARDIZED_CREATE2_BENCHMARK_PRESET.matcher,
+      );
+      sessionRef.current = session;
+
+      unsubscribeRef.current?.();
+      unsubscribeRef.current = session.subscribe((nextState) => {
+        setSessionState(nextState);
+        if (nextState.error !== null) {
+          setError(nextState.error);
+        }
+      });
+
+      const limit = Number.parseInt(durationMs, 10) || 10_000;
+      timerRef.current = setTimeout(() => {
+        session.stop();
+      }, limit);
+
+      void session.start().catch((startError) => {
+        setError(startError instanceof Error ? startError.message : "Benchmark failed");
+      });
+    } catch (startError) {
+      setError(startError instanceof Error ? startError.message : "Benchmark failed");
     }
   }
 
+  function handleStop() {
+    if (timerRef.current !== null) clearTimeout(timerRef.current);
+    sessionRef.current?.stop();
+  }
+
+  const running = sessionState?.status === "running";
+
   return (
     <div className="flex flex-1 flex-col gap-4 py-8">
-      <HeroPanel>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-3">
-            <p className="text-sm font-medium tracking-[0.24em] text-muted-foreground uppercase">
-              Standardized Benchmark
-            </p>
-            <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-              Fixed CREATE2 inputs, repeatable GPU throughput.
-            </h1>
-            <p className="max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Benchmark mode always runs the versioned preset{" "}
-              <span className="font-mono">{STANDARDIZED_CREATE2_BENCHMARK_PRESET.version}</span>. It uses the same
-              CREATE2 mining shader as the app, with the benchmark matcher fixed to leading zeros = 20.
-            </p>
-          </div>
-          <StatCard
-            label="WebGPU"
-            value={support.supported ? "Ready" : "Required"}
-            accent={support.adapterLabel ?? support.message}
-          />
-        </div>
-      </HeroPanel>
-
       <section className="grid gap-4 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
         <Card>
           <CardHeader>
             <CardDescription>Preset</CardDescription>
-            <CardTitle className="text-xl font-semibold text-foreground">CREATE2 Standard v1</CardTitle>
+            <CardTitle>CREATE2 Standard v1</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
             <ReadOnlyField
@@ -108,82 +117,23 @@ export function BenchmarkConsole() {
                 onChange={(event) => setDurationMs(event.target.value)}
                 className="font-mono"
               />
-              <FieldDescription>Standardized run length for this benchmark pass.</FieldDescription>
+              <FieldDescription>The session auto-stops after this duration.</FieldDescription>
             </Field>
-            <Button
-              onClick={handleRun}
-              disabled={running || !support.supported}
-            >
-              {running ? "Running benchmark..." : "Run Benchmark"}
-            </Button>
             {error !== null ? <p className="text-sm text-destructive">{error}</p> : null}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardDescription>Results</CardDescription>
-            <CardTitle className="text-xl font-semibold text-foreground">Standard CREATE2 throughput</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {result === null ? (
-              <EmptyState>No benchmark runs yet.</EmptyState>
-            ) : (
-              <Card>
-                <CardHeader className="gap-0">
-                  <CardDescription className="text-xs font-medium tracking-[0.18em] uppercase">
-                    {result.preset}
-                  </CardDescription>
-                  <CardTitle className="mt-2 text-2xl font-semibold text-foreground">
-                    {formatHashrate(result.hashrate)}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <dl className="mt-4 grid gap-4 text-sm">
-                    <Metric
-                      label="Duration"
-                      value={`${(result.durationMs / 1000).toFixed(2)}s`}
-                    />
-                    <Metric
-                      label="Total Hashes"
-                      value={formatBigInt(result.totalHashes)}
-                    />
-                    <Metric
-                      label="Dispatch"
-                      value={`${result.dispatchX} x ${result.dispatchY} x ${result.workgroupSize}`}
-                    />
-                    <Metric
-                      label="Adapter"
-                      value={result.adapterLabel ?? "Unknown"}
-                    />
-                  </dl>
-                </CardContent>
-              </Card>
-            )}
-          </CardContent>
-        </Card>
+        <TelemetryCard
+          sessionState={sessionState}
+          support={support}
+          error={error}
+          running={running}
+          startLabel="Run Benchmark"
+          emptyMessage="No benchmark runs yet. Hit Run Benchmark to measure GPU throughput."
+          onStart={handleRun}
+          onStop={handleStop}
+        />
       </section>
     </div>
   );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-medium text-foreground">{value}</dd>
-    </div>
-  );
-}
-
-function formatHashrate(value: number): string {
-  if (value >= 1e9) return `${(value / 1e9).toFixed(2)} GH/s`;
-  if (value >= 1e6) return `${(value / 1e6).toFixed(2)} MH/s`;
-  if (value >= 1e3) return `${(value / 1e3).toFixed(2)} KH/s`;
-  return `${value.toFixed(0)} H/s`;
-}
-
-function formatBigInt(value: bigint): string {
-  const raw = value.toString();
-  return raw.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }

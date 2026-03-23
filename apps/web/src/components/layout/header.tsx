@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gauge, Satellite, Sparkles } from "lucide-react";
+import { Gauge, Moon, Satellite, Sparkles, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 
 import { useScroll } from "@/hooks/use-scroll";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ const navItems = [
 export function Header() {
   const scrolled = useScroll(10);
   const pathname = usePathname();
+  const { resolvedTheme, setTheme } = useTheme();
 
   return (
     <header
@@ -67,8 +69,19 @@ export function Header() {
             })}
           </nav>
         </div>
-        <div className="rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs text-muted-foreground">
-          GPU only
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs text-muted-foreground">
+            <span className="inline-block size-1.5 rounded-full bg-emerald-500" />
+            GPU only
+          </div>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Toggle theme"
+            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+          >
+            {resolvedTheme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          </Button>
         </div>
       </nav>
     </header>

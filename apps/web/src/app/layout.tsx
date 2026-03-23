@@ -35,7 +35,7 @@ export default function RootLayout({
             <div className="min-h-svh bg-background">
               <Header />
               <main className="flex min-h-svh flex-col pt-16">
-                <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 sm:px-6">{children}</div>
+                <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4">{children}</div>
               </main>
               <Toaster />
             </div>

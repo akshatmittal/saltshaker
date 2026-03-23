@@ -42,6 +42,6 @@ export const STANDARDIZED_CREATE2_BENCHMARK_PRESET = {
   },
   matcher: {
     type: "leadingZeros",
-    value: 20,
+    value: 40,
   } as LeadingZerosMatcherSpec,
 } as const;
