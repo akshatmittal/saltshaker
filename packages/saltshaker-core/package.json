@@ -34,7 +34,7 @@
     "viem": "catalog:"
   },
   "devDependencies": {
-    "@webgpu/types": "^0.1.68",
+    "@webgpu/types": "catalog:",
     "@workspace/typescript-config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",

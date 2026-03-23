@@ -1,7 +1,10 @@
 {
   "extends": "@workspace/typescript-config/base.json",
   "compilerOptions": {
-    "paths": { "@/*": ["./src/*"] }
+    "types": ["@webgpu/types"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["."],
   "exclude": ["dist", "node_modules"]

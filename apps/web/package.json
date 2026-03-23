@@ -41,7 +41,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@webgpu/types": "^0.1.68",
+    "@webgpu/types": "catalog:",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
