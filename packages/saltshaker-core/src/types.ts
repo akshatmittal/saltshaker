@@ -52,44 +52,7 @@ export interface SafeJobInput {
 
 export type MiningJob = Create2JobInput | SafeJobInput;
 
-export interface PreparedAddressMatcher {
-  type: MatcherKind;
-  valueHex: `0x${string}`;
-  valueNibbles: Uint8Array;
-  nibbleLength: number;
-  leadingZeroNibbles: number;
-}
-
-interface PreparedJobBase {
-  protocol: JobProtocol;
-  startNonce: bigint;
-}
-
-export interface PreparedCreate2Job extends PreparedJobBase {
-  protocol: "create2";
-  deployer: Address;
-  deployerBytes: Uint8Array;
-  fixedSaltPrefix: Hex;
-  fixedSaltPrefixBytes: Uint8Array;
-  initCodeHash: Hex;
-  initCodeHashBytes: Uint8Array;
-}
-
-export interface PreparedSafeJob extends PreparedJobBase {
-  protocol: "safe";
-  initializer: Hex;
-  initializerHash: Hex;
-  initializerHashBytes: Uint8Array;
-  factory: Address;
-  factoryBytes: Uint8Array;
-  proxyCreationCodeHash: Hex;
-  proxyCreationCodeHashBytes: Uint8Array;
-}
-
-export type PreparedMiningJob = PreparedCreate2Job | PreparedSafeJob;
-
-export interface MiningCandidate {
-  protocol: JobProtocol;
+export interface MiningResult {
   nonce: bigint;
   salt: Hex;
   address: Address;
@@ -97,19 +60,14 @@ export interface MiningCandidate {
   leadingZeroNibbles: number;
 }
 
-export type MiningStatus = "idle" | "running" | "paused" | "stopped" | "error";
+export type MiningStatus = "idle" | "running" | "stopped" | "error";
 
 export interface MiningSessionState {
-  protocol: JobProtocol;
   status: MiningStatus;
-  adapterLabel?: string;
   error: string | null;
-  totalHashes: bigint;
   hashrate: number;
   elapsedMs: number;
-  currentWindowStart: bigint;
-  dispatchesCompleted: number;
-  top: MiningCandidate[];
+  results: MiningResult[];
 }
 
 export interface CheckWebGpuSupportResult {
@@ -118,35 +76,21 @@ export interface CheckWebGpuSupportResult {
   adapterLabel?: string;
 }
 
-export interface WebGpuMiningSessionOptions {
-  dispatchX?: number;
-  dispatchY?: number;
+export interface MiningSessionDispatchOptions {
+  x?: number;
+  y?: number;
+}
+
+export interface CreateMiningSessionInput {
+  job: MiningJob;
+  matcher?: AddressMatcherSpec;
+  dispatch?: MiningSessionDispatchOptions;
   maxResults?: number;
   powerPreference?: GPUPowerPreference;
 }
 
-export interface WebGpuMiningSession {
+export interface MiningSession {
   start(): Promise<void>;
-  pause(): void;
   stop(): void;
-  getState(): MiningSessionState;
   subscribe(listener: (state: MiningSessionState) => void): () => void;
-}
-
-export interface Create2BenchmarkOptions {
-  durationMs?: number;
-  dispatchX?: number;
-  dispatchY?: number;
-  powerPreference?: GPUPowerPreference;
-}
-
-export interface Create2BenchmarkResult {
-  preset: "create2-standard-v1";
-  durationMs: number;
-  totalHashes: bigint;
-  hashrate: number;
-  dispatchX: number;
-  dispatchY: number;
-  workgroupSize: number;
-  adapterLabel?: string;
 }

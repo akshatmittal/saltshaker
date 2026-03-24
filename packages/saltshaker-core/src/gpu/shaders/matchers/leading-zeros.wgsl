@@ -32,7 +32,7 @@ fn matcher_leading_zero_nibbles(address: array<u32, 5>) -> u32 {
 fn matcher_score(address: array<u32, 5>, matcher: MatcherData) -> u32 {
     let zero_count = matcher_leading_zero_nibbles(address);
     if (zero_count >= matcher.min_zero_nibbles) {
-        return zero_count - matcher.min_zero_nibbles + 1u;
+        return zero_count;
     }
     return 0u;
 }

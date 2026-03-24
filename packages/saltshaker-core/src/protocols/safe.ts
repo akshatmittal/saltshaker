@@ -1,8 +1,11 @@
 import { concat, encodeFunctionData, getAddress, keccak256, pad, toHex, type Hex } from "viem";
 
 import { SAFE_SETUP_ABI } from "../constants";
-import type { MiningCandidate, PreparedSafeJob, SafeJobInput } from "../types";
-import { addressFromHash, assert, countLeadingZeroNibbles, ensureAddress, hexToBytes, normalizeHex } from "../utils";
+import type { MiningResult, SafeJobInput } from "../types";
+import type { PreparedSafeJob } from "../internal/types";
+import { addressFromHash, countLeadingZeroNibbles, ensureAddress } from "../internal/address";
+import { assert } from "../internal/assert";
+import { hexToBytes, normalizeHex } from "../internal/hex";
 
 export function encodeSafeInitializer(input: SafeJobInput): Hex {
   return encodeFunctionData({
@@ -31,7 +34,6 @@ export function prepareSafeJob(input: SafeJobInput): PreparedSafeJob {
   return {
     protocol: "safe",
     startNonce: input.startNonce ?? 0n,
-    initializer,
     initializerHash,
     initializerHashBytes: hexToBytes(initializerHash),
     factory,
@@ -45,13 +47,12 @@ export function computeSafeSalt(initializerHash: Hex, nonce: bigint): Hex {
   return keccak256(concat([initializerHash, pad(toHex(nonce), { size: 32 })]));
 }
 
-export function deriveSafeCandidate(job: PreparedSafeJob, nonce: bigint, score: number): MiningCandidate {
+export function deriveSafeResult(job: PreparedSafeJob, nonce: bigint, score: number): MiningResult {
   const salt = computeSafeSalt(job.initializerHash, nonce);
   const hash = keccak256(concat(["0xff", job.factory, salt, job.proxyCreationCodeHash]));
   const address = getAddress(addressFromHash(hash));
 
   return {
-    protocol: "safe",
     nonce,
     salt,
     address,

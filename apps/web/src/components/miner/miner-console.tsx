@@ -2,16 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Copy } from "lucide-react";
+import { toHex, type Hex } from "viem";
 import {
   checkWebGpuSupport,
-  createWebGpuMiningSession,
+  createMiningSession,
   STANDARDIZED_CREATE2_BENCHMARK_PRESET,
   type AddressMatcherSpec,
   type CheckWebGpuSupportResult,
   type MatcherKind,
+  type MiningSession,
   type MiningJob,
   type MiningSessionState,
-  type WebGpuMiningSession,
 } from "saltshaker";
 
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ const DEFAULT_SAFE_FACTORY = "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2" as con
 const DEFAULT_SAFE_FALLBACK_HANDLER = "0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4" as const;
 const DEFAULT_SAFE_PROXY_CREATION_CODE_HASH =
   "0xcaf2dc2f91b804b2fcf1ed3a965a1ff4404b840b80c124277b00a43b4634b2ce" as const;
+const CREATE2_FIXED_SALT_PREFIX_BYTES = 24;
 
 type Create2FormState = {
   deployer: string;
@@ -53,7 +55,7 @@ type SafeFormState = {
 
 const defaultCreate2: Create2FormState = {
   deployer: STANDARDIZED_CREATE2_BENCHMARK_PRESET.job.deployer,
-  fixedSaltPrefix: STANDARDIZED_CREATE2_BENCHMARK_PRESET.job.fixedSaltPrefix,
+  fixedSaltPrefix: "",
   initCodeHash: STANDARDIZED_CREATE2_BENCHMARK_PRESET.job.initCodeHash,
 };
 
@@ -77,7 +79,7 @@ type MatcherFormState = {
 
 const defaultMatcher: MatcherFormState = {
   type: "leadingZeros",
-  value: "0",
+  value: "8",
 };
 
 export function MinerConsole() {
@@ -93,7 +95,7 @@ export function MinerConsole() {
   const [sessionState, setSessionState] = useState<MiningSessionState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const sessionRef = useRef<WebGpuMiningSession | null>(null);
+  const sessionRef = useRef<MiningSession | null>(null);
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -122,6 +124,28 @@ export function MinerConsole() {
     return (trimmed.startsWith("0x") ? trimmed : `0x${trimmed}`) as `0x${string}`;
   }
 
+  function buildCreate2FixedSaltPrefix(): `0x${string}` {
+    const normalized = normalizeHexInput(create2Form.fixedSaltPrefix) ?? "0x";
+    const raw = normalized.slice(2);
+
+    if (!/^[0-9a-fA-F]*$/.test(raw)) {
+      throw new Error("Fixed salt prefix must be a hex string");
+    }
+
+    if (raw.length % 2 !== 0) {
+      throw new Error("Fixed salt prefix must have an even number of hex characters");
+    }
+
+    const providedBytes = raw.length / 2;
+    if (providedBytes > CREATE2_FIXED_SALT_PREFIX_BYTES) {
+      throw new Error(`Fixed salt prefix must be ${CREATE2_FIXED_SALT_PREFIX_BYTES} bytes or shorter`);
+    }
+
+    const randomBytes = new Uint8Array(CREATE2_FIXED_SALT_PREFIX_BYTES - providedBytes);
+
+    return `0x${raw}${toHex(crypto.getRandomValues(randomBytes)).slice(2)}` as Hex;
+  }
+
   function buildMatcher(): AddressMatcherSpec {
     if (matcher.type === "leadingZeros") {
       return {
@@ -141,7 +165,7 @@ export function MinerConsole() {
       return {
         protocol: "create2",
         deployer: create2Form.deployer as `0x${string}`,
-        fixedSaltPrefix: normalizeHexInput(create2Form.fixedSaltPrefix) ?? "0x",
+        fixedSaltPrefix: buildCreate2FixedSaltPrefix(),
         initCodeHash: normalizeHexInput(create2Form.initCodeHash),
       };
     }
@@ -171,7 +195,7 @@ export function MinerConsole() {
     };
   }
 
-  function attachSession(session: WebGpuMiningSession) {
+  function attachSession(session: MiningSession) {
     unsubscribeRef.current?.();
     unsubscribeRef.current = session.subscribe((nextState) => {
       setSessionState(nextState);
@@ -191,7 +215,7 @@ export function MinerConsole() {
 
     try {
       sessionRef.current?.stop();
-      const session = createWebGpuMiningSession(buildJob(), buildMatcher());
+      const session = createMiningSession({ job: buildJob(), matcher: buildMatcher() });
       sessionRef.current = session;
       attachSession(session);
       void session.start().catch((startError) => {
@@ -207,7 +231,7 @@ export function MinerConsole() {
     setSessionState(null);
   }
 
-  const topResults = sessionState?.top ?? [];
+  const topResults = sessionState?.results ?? [];
   const running = sessionState?.status === "running";
 
   return (
@@ -232,7 +256,7 @@ export function MinerConsole() {
               {protocol === "create2" ? (
                 <div className="grid gap-4">
                   <Field>
-                    <FieldLabel>Deployer / Factory</FieldLabel>
+                    <FieldLabel>Factory</FieldLabel>
                     <Input
                       value={create2Form.deployer}
                       onChange={(event) => updateCreate2("deployer", event.target.value)}
@@ -240,15 +264,13 @@ export function MinerConsole() {
                     />
                   </Field>
                   <Field>
-                    <FieldLabel>Fixed Salt Prefix</FieldLabel>
+                    <FieldLabel>Salt Prefix</FieldLabel>
                     <Input
                       value={create2Form.fixedSaltPrefix}
                       onChange={(event) => updateCreate2("fixedSaltPrefix", event.target.value)}
                       className="font-mono"
+                      placeholder="Optional hex prefix"
                     />
-                    <FieldDescription>
-                      Exactly 24 bytes. The miner scans the final 8 bytes as the nonce window.
-                    </FieldDescription>
                   </Field>
                   <Field>
                     <FieldLabel>Init Code Hash</FieldLabel>
@@ -394,7 +416,7 @@ export function MinerConsole() {
                   />
                   <FieldDescription>
                     {matcher.type === "leadingZeros"
-                      ? "Whole number of leading zero hex nibbles required before the score becomes positive."
+                      ? "Whole number of leading zero hex nibbles required before a result is accepted. Score equals the zero-nibble count."
                       : "Hex string, with or without 0x prefix. Odd-length values are allowed."}
                   </FieldDescription>
                 </Field>

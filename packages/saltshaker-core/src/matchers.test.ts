@@ -1,15 +1,16 @@
 import { getAddress } from "viem";
 import { describe, expect, it } from "vitest";
 
-import { mergeCandidate, prepareMatcher, scoreAddress } from "./matchers";
-import type { MiningCandidate } from "./types";
+import { mergeResult } from "./internal/matchers/results";
+import { prepareMatcher } from "./internal/matchers/prepare";
+import { scoreAddress } from "./internal/matchers/score";
+import type { MiningResult } from "./types";
 
 const PATTERN_ADDRESS = getAddress("0x0123456789abcdef0123456789abcdef01234567");
 const ZERO_HEAVY_ADDRESS = getAddress("0x000f123456789abcdef0123456789abcdef01234");
 
-function createCandidate(address: `0x${string}`, nonce: bigint, score: number): MiningCandidate {
+function createCandidate(address: `0x${string}`, nonce: bigint, score: number): MiningResult {
   return {
-    protocol: "create2",
     nonce,
     salt: "0x" as const,
     address,
@@ -22,9 +23,14 @@ describe("prepareMatcher", () => {
   it("accepts odd-length hex patterns at nibble precision", () => {
     const matcher = prepareMatcher({ type: "prefix", value: "0xabc" });
 
+    expect(matcher.type).toBe("prefix");
+    if (matcher.type !== "prefix") {
+      throw new Error("Expected prefix matcher");
+    }
+
     expect(matcher.valueHex).toBe("0xabc");
-    expect(matcher.nibbleLength).toBe(3);
-    expect([...matcher.valueNibbles]).toEqual([10, 11, 12]);
+    expect(matcher.nibbles.length).toBe(3);
+    expect([...matcher.nibbles]).toEqual([10, 11, 12]);
   });
 
   it("rejects empty scored pattern matchers", () => {
@@ -56,7 +62,7 @@ describe("scoreAddress", () => {
   it("uses leading-zero count when the threshold is met", () => {
     const matcher = prepareMatcher({ type: "leadingZeros", value: 3 });
 
-    expect(scoreAddress(ZERO_HEAVY_ADDRESS, matcher)).toBe(1);
+    expect(scoreAddress(ZERO_HEAVY_ADDRESS, matcher)).toBe(3);
   });
 
   it("keeps leading-zero ranking monotonic above the threshold", () => {
@@ -73,12 +79,12 @@ describe("scoreAddress", () => {
   });
 });
 
-describe("mergeCandidate", () => {
+describe("mergeResult", () => {
   it("keeps first-seen order for equal scores", () => {
     const first = createCandidate(getAddress("0x1000000000000000000000000000000000000000"), 1n, 5);
     const second = createCandidate(getAddress("0x2000000000000000000000000000000000000000"), 2n, 5);
 
-    const merged = mergeCandidate(mergeCandidate([], first, 10), second, 10);
+    const merged = mergeResult(mergeResult([], first, 10), second, 10);
 
     expect(merged.map((candidate) => candidate.address)).toEqual([first.address, second.address]);
   });
@@ -86,9 +92,9 @@ describe("mergeCandidate", () => {
   it("does not reorder an unchanged duplicate candidate", () => {
     const first = createCandidate(getAddress("0x1000000000000000000000000000000000000000"), 1n, 5);
     const second = createCandidate(getAddress("0x2000000000000000000000000000000000000000"), 2n, 5);
-    const current = mergeCandidate(mergeCandidate([], first, 10), second, 10);
+    const current = mergeResult(mergeResult([], first, 10), second, 10);
 
-    const merged = mergeCandidate(current, first, 10);
+    const merged = mergeResult(current, first, 10);
 
     expect(merged).toBe(current);
   });
@@ -97,7 +103,7 @@ describe("mergeCandidate", () => {
     const high = createCandidate(getAddress("0x3000000000000000000000000000000000000000"), 3n, 8);
     const low = createCandidate(getAddress("0x4000000000000000000000000000000000000000"), 4n, 2);
 
-    const merged = mergeCandidate(mergeCandidate([], low, 10), high, 10);
+    const merged = mergeResult(mergeResult([], low, 10), high, 10);
 
     expect(merged.map((candidate) => candidate.address)).toEqual([high.address, low.address]);
   });

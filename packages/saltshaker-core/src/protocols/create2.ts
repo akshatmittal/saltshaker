@@ -1,17 +1,12 @@
 import { concat, getAddress, keccak256, type Address, type Hex } from "viem";
 
 import { FIXED_SALT_PREFIX_BYTES } from "../constants";
-import type { Create2JobInput, MiningCandidate, PreparedCreate2Job } from "../types";
-import {
-  addressFromHash,
-  assert,
-  bytesToHex,
-  countLeadingZeroNibbles,
-  ensureAddress,
-  hexToBytes,
-  normalizeHex,
-  writeBigEndianNonce,
-} from "../utils";
+import type { Create2JobInput, MiningResult } from "../types";
+import type { PreparedCreate2Job } from "../internal/types";
+import { addressFromHash, countLeadingZeroNibbles, ensureAddress } from "../internal/address";
+import { assert } from "../internal/assert";
+import { bytesToHex, hexToBytes, normalizeHex } from "../internal/hex";
+import { writeBigEndianNonce } from "../internal/words";
 
 export function prepareCreate2Job(input: Create2JobInput): PreparedCreate2Job {
   const deployer = ensureAddress(input.deployer, "CREATE2 deployer");
@@ -37,14 +32,13 @@ export function prepareCreate2Job(input: Create2JobInput): PreparedCreate2Job {
     startNonce: input.startNonce ?? 0n,
     deployer,
     deployerBytes: hexToBytes(deployer),
-    fixedSaltPrefix,
     fixedSaltPrefixBytes,
     initCodeHash,
     initCodeHashBytes: hexToBytes(initCodeHash),
   };
 }
 
-export function deriveCreate2Candidate(job: PreparedCreate2Job, nonce: bigint, score: number): MiningCandidate {
+export function deriveCreate2Result(job: PreparedCreate2Job, nonce: bigint, score: number): MiningResult {
   const saltBytes = new Uint8Array(32);
   saltBytes.set(job.fixedSaltPrefixBytes, 0);
   writeBigEndianNonce(saltBytes, FIXED_SALT_PREFIX_BYTES, nonce, 8);
@@ -54,7 +48,6 @@ export function deriveCreate2Candidate(job: PreparedCreate2Job, nonce: bigint, s
   const address = getAddress(addressFromHash(hash));
 
   return {
-    protocol: "create2",
     nonce,
     salt,
     address,

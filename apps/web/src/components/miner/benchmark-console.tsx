@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
   checkWebGpuSupport,
-  createWebGpuMiningSession,
+  createMiningSession,
   STANDARDIZED_CREATE2_BENCHMARK_PRESET,
   type CheckWebGpuSupportResult,
+  type MiningSession,
   type MiningSessionState,
-  type WebGpuMiningSession,
 } from "saltshaker";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,7 +25,7 @@ export function BenchmarkConsole() {
   const [sessionState, setSessionState] = useState<MiningSessionState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const sessionRef = useRef<WebGpuMiningSession | null>(null);
+  const sessionRef = useRef<MiningSession | null>(null);
   const unsubscribeRef = useRef<(() => void) | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -50,10 +50,10 @@ export function BenchmarkConsole() {
       sessionRef.current?.stop();
       if (timerRef.current !== null) clearTimeout(timerRef.current);
 
-      const session = createWebGpuMiningSession(
-        STANDARDIZED_CREATE2_BENCHMARK_PRESET.job,
-        STANDARDIZED_CREATE2_BENCHMARK_PRESET.matcher,
-      );
+      const session = createMiningSession({
+        job: STANDARDIZED_CREATE2_BENCHMARK_PRESET.job,
+        matcher: STANDARDIZED_CREATE2_BENCHMARK_PRESET.matcher,
+      });
       sessionRef.current = session;
 
       unsubscribeRef.current?.();
@@ -107,7 +107,7 @@ export function BenchmarkConsole() {
             />
             <ReadOnlyField
               label="Matcher"
-              value="Leading zeros = 20"
+              value="Leading zeros = 40"
             />
             <Separator />
             <Field>
