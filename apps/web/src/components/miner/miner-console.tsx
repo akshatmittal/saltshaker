@@ -394,8 +394,8 @@ export function MinerConsole() {
                   />
                   <FieldDescription>
                     {matcher.type === "leadingZeros"
-                      ? "Whole number of leading zero hex nibbles. Use 0 for no filtering."
-                      : "Hex string, with or without 0x prefix."}
+                      ? "Whole number of leading zero hex nibbles required before the score becomes positive."
+                      : "Hex string, with or without 0x prefix. Odd-length values are allowed."}
                   </FieldDescription>
                 </Field>
               </div>
@@ -425,6 +425,7 @@ export function MinerConsole() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-8">#</TableHead>
+                      <TableHead className="w-16">Score</TableHead>
                       <TableHead className="w-16">Zeros</TableHead>
                       <TableHead>Result</TableHead>
                     </TableRow>
@@ -433,6 +434,7 @@ export function MinerConsole() {
                     {topResults.map((result, index) => (
                       <TableRow key={`${result.address}-${result.nonce.toString()}`}>
                         <TableCell className="text-xs text-muted-foreground">{index + 1}</TableCell>
+                        <TableCell className="font-medium">{result.score}</TableCell>
                         <TableCell className="font-medium">{result.leadingZeroNibbles}</TableCell>
                         <TableCell className="min-w-0">
                           <div className="">

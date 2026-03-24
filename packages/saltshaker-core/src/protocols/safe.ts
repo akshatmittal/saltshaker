@@ -45,7 +45,7 @@ export function computeSafeSalt(initializerHash: Hex, nonce: bigint): Hex {
   return keccak256(concat([initializerHash, pad(toHex(nonce), { size: 32 })]));
 }
 
-export function deriveSafeCandidate(job: PreparedSafeJob, nonce: bigint): MiningCandidate {
+export function deriveSafeCandidate(job: PreparedSafeJob, nonce: bigint, score: number): MiningCandidate {
   const salt = computeSafeSalt(job.initializerHash, nonce);
   const hash = keccak256(concat(["0xff", job.factory, salt, job.proxyCreationCodeHash]));
   const address = getAddress(addressFromHash(hash));
@@ -55,6 +55,7 @@ export function deriveSafeCandidate(job: PreparedSafeJob, nonce: bigint): Mining
     nonce,
     salt,
     address,
+    score,
     leadingZeroNibbles: countLeadingZeroNibbles(address),
   };
 }

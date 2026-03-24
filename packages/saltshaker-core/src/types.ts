@@ -54,8 +54,9 @@ export type MiningJob = Create2JobInput | SafeJobInput;
 
 export interface PreparedAddressMatcher {
   type: MatcherKind;
-  valueHex: Hex;
-  valueBytes: Uint8Array;
+  valueHex: `0x${string}`;
+  valueNibbles: Uint8Array;
+  nibbleLength: number;
   leadingZeroNibbles: number;
 }
 
@@ -92,6 +93,7 @@ export interface MiningCandidate {
   nonce: bigint;
   salt: Hex;
   address: Address;
+  score: number;
   leadingZeroNibbles: number;
 }
 

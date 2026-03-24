@@ -8,19 +8,13 @@ struct Constants {
 struct Params {
     nonce_low: u32,
     nonce_high: u32,
-    _padding0: u32,
-    _padding1: u32,
 }
 
 struct BestResult {
     nonce_low: atomic<u32>,
     nonce_high: atomic<u32>,
-    addr0: atomic<u32>,
-    addr1: atomic<u32>,
-    addr2: atomic<u32>,
-    addr3: atomic<u32>,
-    addr4: atomic<u32>,
-    found: atomic<u32>,
+    addr: array<atomic<u32>, 5>,
+    score: atomic<u32>,
 }
 
 @group(0) @binding(0)
@@ -50,24 +44,20 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
     let derived_salt = keccak256_64(salt_input);
     let address = keccak256_85_address(constants.factory, derived_salt, constants.proxy_code_hash);
-    if (!matcher_matches(address, constants.matcher)) {
+    let score = matcher_score(address, constants.matcher);
+    if (score == 0u) {
         return;
     }
 
-    let best0 = atomicLoad(&best.addr0);
-    let best1 = atomicLoad(&best.addr1);
-    let best2 = atomicLoad(&best.addr2);
-    let best3 = atomicLoad(&best.addr3);
-    let best4 = atomicLoad(&best.addr4);
-
-    if (is_smaller(address, best0, best1, best2, best3, best4)) {
-        atomicStore(&best.addr0, address[0]);
-        atomicStore(&best.addr1, address[1]);
-        atomicStore(&best.addr2, address[2]);
-        atomicStore(&best.addr3, address[3]);
-        atomicStore(&best.addr4, address[4]);
+    let best_score = atomicLoad(&best.score);
+    if (score > best_score) {
+        atomicStore(&best.addr[0], address[0]);
+        atomicStore(&best.addr[1], address[1]);
+        atomicStore(&best.addr[2], address[2]);
+        atomicStore(&best.addr[3], address[3]);
+        atomicStore(&best.addr[4], address[4]);
         atomicStore(&best.nonce_low, nonce.x);
         atomicStore(&best.nonce_high, nonce.y);
-        atomicStore(&best.found, 1u);
+        atomicStore(&best.score, score);
     }
 }

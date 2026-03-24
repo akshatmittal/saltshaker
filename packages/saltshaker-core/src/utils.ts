@@ -13,6 +13,12 @@ export function normalizeHex(value: Hex | string, label: string): Hex {
   return prefixed as Hex;
 }
 
+export function normalizeNibbleHex(value: Hex | string, label: string): `0x${string}` {
+  const prefixed = value.startsWith("0x") ? value : `0x${value}`;
+  assert(/^0x[0-9a-fA-F]*$/.test(prefixed), `${label} must be a hex string`);
+  return prefixed.toLowerCase() as `0x${string}`;
+}
+
 export function ensureAddress(value: string, label: string): Address {
   assert(isAddress(value), `${label} must be a valid address`);
   return getAddress(value);
@@ -25,6 +31,17 @@ export function hexToBytes(hex: Hex | string): Uint8Array {
     bytes[index] = Number.parseInt(normalized.slice(2 + index * 2, 4 + index * 2), 16);
   }
   return bytes;
+}
+
+export function hexToNibbles(hex: Hex | string): Uint8Array {
+  const normalized = normalizeNibbleHex(hex, "Hex value");
+  const nibbles = new Uint8Array(normalized.length - 2);
+
+  for (let index = 0; index < nibbles.length; index += 1) {
+    nibbles[index] = Number.parseInt(normalized[index + 2]!, 16);
+  }
+
+  return nibbles;
 }
 
 export function bytesToHex(bytes: Uint8Array): Hex {

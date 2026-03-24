@@ -44,7 +44,7 @@ export function prepareCreate2Job(input: Create2JobInput): PreparedCreate2Job {
   };
 }
 
-export function deriveCreate2Candidate(job: PreparedCreate2Job, nonce: bigint): MiningCandidate {
+export function deriveCreate2Candidate(job: PreparedCreate2Job, nonce: bigint, score: number): MiningCandidate {
   const saltBytes = new Uint8Array(32);
   saltBytes.set(job.fixedSaltPrefixBytes, 0);
   writeBigEndianNonce(saltBytes, FIXED_SALT_PREFIX_BYTES, nonce, 8);
@@ -58,6 +58,7 @@ export function deriveCreate2Candidate(job: PreparedCreate2Job, nonce: bigint): 
     nonce,
     salt,
     address,
+    score,
     leadingZeroNibbles: countLeadingZeroNibbles(address),
   };
 }

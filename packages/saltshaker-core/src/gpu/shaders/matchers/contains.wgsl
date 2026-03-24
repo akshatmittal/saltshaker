@@ -1,9 +1,6 @@
 struct MatcherData {
-    value: array<u32, 5>,
-    value_len: u32,
-    _padding0: u32,
-    _padding1: u32,
-    _padding2: u32,
+    value: array<u32, 10>,
+    value_len_nibbles: u32,
 }
 
 fn matcher_address_byte(address: array<u32, 5>, index: u32) -> u32 {
@@ -11,27 +8,50 @@ fn matcher_address_byte(address: array<u32, 5>, index: u32) -> u32 {
     return (word >> ((index % 4u) * 8u)) & 0xffu;
 }
 
-fn matcher_pattern_byte(pattern: array<u32, 5>, index: u32) -> u32 {
+fn matcher_address_nibble(address: array<u32, 5>, index: u32) -> u32 {
+    let byte = matcher_address_byte(address, index / 2u);
+    if ((index % 2u) == 0u) {
+        return (byte >> 4u) & 0x0fu;
+    }
+    return byte & 0x0fu;
+}
+
+fn matcher_pattern_nibble(pattern: array<u32, 10>, index: u32) -> u32 {
     let word = pattern[index / 4u];
     return (word >> ((index % 4u) * 8u)) & 0xffu;
 }
 
-fn matcher_matches(address: array<u32, 5>, matcher: MatcherData) -> bool {
-    if (matcher.value_len == 0u) {
-        return true;
+fn matcher_score(address: array<u32, 5>, matcher: MatcherData) -> u32 {
+    if (matcher.value_len_nibbles == 0u) {
+        return 0u;
     }
-    let last_start = 20u - matcher.value_len;
-    for (var start = 0u; start <= last_start; start = start + 1u) {
-        var matched = true;
-        for (var index = 0u; index < matcher.value_len; index = index + 1u) {
-            if (matcher_address_byte(address, start + index) != matcher_pattern_byte(matcher.value, index)) {
-                matched = false;
-                break;
+
+    var previous: array<u32, 41>;
+    var current: array<u32, 41>;
+    var best = 0u;
+
+    for (var address_index = 1u; address_index <= 40u; address_index = address_index + 1u) {
+        current[0] = 0u;
+        for (var value_index = 1u; value_index <= matcher.value_len_nibbles; value_index = value_index + 1u) {
+            if (
+                matcher_address_nibble(address, address_index - 1u) ==
+                matcher_pattern_nibble(matcher.value, value_index - 1u)
+            ) {
+                let score = previous[value_index - 1u] + 1u;
+                current[value_index] = score;
+                if (score > best) {
+                    best = score;
+                }
+            } else {
+                current[value_index] = 0u;
             }
         }
-        if (matched) {
-            return true;
+
+        for (var value_index = 0u; value_index <= matcher.value_len_nibbles; value_index = value_index + 1u) {
+            previous[value_index] = current[value_index];
+            current[value_index] = 0u;
         }
     }
-    return false;
+
+    return best;
 }

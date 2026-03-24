@@ -5,7 +5,7 @@ import {
   MAX_RESULTS,
   STANDARDIZED_CREATE2_BENCHMARK_PRESET,
 } from "../constants";
-import { matchesAddress, mergeCandidate, prepareMatcher } from "../matchers";
+import { mergeCandidate, prepareMatcher, scoreAddress } from "../matchers";
 import { deriveCandidate, prepareJob } from "../jobs";
 import type {
   AddressMatcherSpec,
@@ -56,8 +56,9 @@ interface SessionInternals {
 }
 
 const RESULT_WORDS = 8;
-const LEADING_ZERO_MATCHER_WORDS = 4;
-const PATTERN_MATCHER_WORDS = 9;
+const LEADING_ZERO_MATCHER_WORDS = 1;
+const PATTERN_WORDS = 10;
+const PATTERN_MATCHER_WORDS = 11;
 const DEFAULT_MATCHER_SPEC: AddressMatcherSpec = { type: "leadingZeros", value: 0 };
 
 function toGpuBufferSource(words: Uint32Array): ArrayBufferView<ArrayBuffer> {
@@ -124,8 +125,8 @@ function setState(internals: SessionInternals, partial: Partial<MiningSessionSta
 
 function buildMatcherPatternBlock(matcher: PreparedAddressMatcher): Uint32Array {
   const out = new Uint32Array(PATTERN_MATCHER_WORDS);
-  out.set(packBytesToWordsLE(matcher.valueBytes, 5), 0);
-  out[5] = matcher.valueBytes.length;
+  out.set(packBytesToWordsLE(matcher.valueNibbles, PATTERN_WORDS), 0);
+  out[PATTERN_WORDS] = matcher.nibbleLength;
   return out;
 }
 
@@ -174,7 +175,13 @@ function getShaderForMatcher(job: PreparedMiningJob, matcherKind: MatcherKind): 
 
 function createEmptyResultWords(): Uint32Array {
   const words = new Uint32Array(RESULT_WORDS);
-  words.fill(0xffff_ffff);
+  words[0] = 0;
+  words[1] = 0;
+  words[2] = 0xffff_ffff;
+  words[3] = 0xffff_ffff;
+  words[4] = 0xffff_ffff;
+  words[5] = 0xffff_ffff;
+  words[6] = 0xffff_ffff;
   words[7] = 0;
   return words;
 }
@@ -209,7 +216,7 @@ async function initializeGpuResources(
   device.queue.writeBuffer(constantsBuffer, 0, toGpuBufferSource(constantsData));
 
   const paramsBuffer = device.createBuffer({
-    size: 16,
+    size: 8,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
   });
 
@@ -299,15 +306,18 @@ async function miningLoop(internals: SessionInternals): Promise<void> {
 
   while (!internals.stopRequested && !internals.pauseRequested) {
     const [nonceLow, nonceHigh] = splitBigIntToU32(internals.currentNonce);
-    resources.device.queue.writeBuffer(resources.paramsBuffer, 0, new Uint32Array([nonceLow, nonceHigh, 0, 0]));
+    resources.device.queue.writeBuffer(resources.paramsBuffer, 0, new Uint32Array([nonceLow, nonceHigh]));
 
     await runDispatch(resources, internals.options.dispatchX, internals.options.dispatchY);
     const resultWords = await readDispatchWinner(resources);
 
-    if (resultWords[7] === 1) {
+    if ((resultWords[7] ?? 0) > 0) {
       const nonce = (BigInt(resultWords[1]!) << 32n) | BigInt(resultWords[0]!);
-      const candidate = deriveCandidate(internals.job, nonce);
-      if (matchesAddress(candidate.address, internals.matcher)) {
+      const gpuScore = resultWords[7]!;
+      const candidate = deriveCandidate(internals.job, nonce, gpuScore);
+      const cpuScore = scoreAddress(candidate.address, internals.matcher);
+
+      if (cpuScore === gpuScore && cpuScore > 0) {
         const top = mergeCandidate(internals.state.top, candidate, internals.options.maxResults);
         setState(internals, { top });
       }
@@ -444,7 +454,7 @@ export async function runCreate2Benchmark(options: Create2BenchmarkOptions = {})
     resources.device.queue.writeBuffer(
       resources.paramsBuffer,
       0,
-      toGpuBufferSource(new Uint32Array([nonceLow, nonceHigh, 0, 0])),
+      toGpuBufferSource(new Uint32Array([nonceLow, nonceHigh])),
     );
     await runDispatch(resources, dispatchX, dispatchY);
     resetResultsBuffer(resources);

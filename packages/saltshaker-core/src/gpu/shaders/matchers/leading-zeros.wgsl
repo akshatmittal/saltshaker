@@ -1,8 +1,5 @@
 struct MatcherData {
     min_zero_nibbles: u32,
-    _padding0: u32,
-    _padding1: u32,
-    _padding2: u32,
 }
 
 fn matcher_address_byte(address: array<u32, 5>, index: u32) -> u32 {
@@ -32,6 +29,10 @@ fn matcher_leading_zero_nibbles(address: array<u32, 5>) -> u32 {
     return total;
 }
 
-fn matcher_matches(address: array<u32, 5>, matcher: MatcherData) -> bool {
-    return matcher_leading_zero_nibbles(address) >= matcher.min_zero_nibbles;
+fn matcher_score(address: array<u32, 5>, matcher: MatcherData) -> u32 {
+    let zero_count = matcher_leading_zero_nibbles(address);
+    if (zero_count >= matcher.min_zero_nibbles) {
+        return zero_count - matcher.min_zero_nibbles + 1u;
+    }
+    return 0u;
 }
