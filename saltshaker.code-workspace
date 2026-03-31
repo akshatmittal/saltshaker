@@ -5,6 +5,10 @@
       "path": "apps/web",
     },
     {
+      "name": "saltshaker-start",
+      "path": "apps/web-start",
+    },
+    {
       "path": "packages/saltshaker-core",
     },
     {

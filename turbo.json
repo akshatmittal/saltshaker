@@ -5,7 +5,7 @@
   "tasks": {
     "build": {
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "outputs": [".next/**", "!.next/cache/**", ".output/**", ".tanstack/**", "dist/**"],
       "dependsOn": ["^build"]
     },
     "lint": {
