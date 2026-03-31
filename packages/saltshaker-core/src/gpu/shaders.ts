@@ -1,40 +1,49 @@
 /// <reference path="../wgsl.d.ts" />
 
-import addressShader from "./shaders/common/address.wgsl";
-import keccakShader from "./shaders/common/keccak.wgsl";
-import utilsShader from "./shaders/common/utils.wgsl";
-import create2EntrypointShader from "./shaders/entrypoints/create2.wgsl";
-import safeEntrypointShader from "./shaders/entrypoints/safe.wgsl";
+import coreShader from "./shaders/common/core.wgsl";
+import kernelShader from "./shaders/common/kernel.wgsl";
 import containsMatcherShader from "./shaders/matchers/contains.wgsl";
 import leadingZerosMatcherShader from "./shaders/matchers/leading-zeros.wgsl";
+import patternMatcherShader from "./shaders/matchers/pattern-common.wgsl";
 import prefixMatcherShader from "./shaders/matchers/prefix.wgsl";
 import suffixMatcherShader from "./shaders/matchers/suffix.wgsl";
+import create2ProtocolShader from "./shaders/protocols/create2.wgsl";
+import safeProtocolShader from "./shaders/protocols/safe.wgsl";
 
 import type { MatcherKind } from "../types";
 
-const MATCHER_KINDS = ["prefix", "suffix", "contains", "leadingZeros"] as const satisfies readonly MatcherKind[];
+type MiningProtocol = "create2" | "safe";
 
-const matcherShaders: Record<MatcherKind, string> = {
-  prefix: prefixMatcherShader,
-  suffix: suffixMatcherShader,
-  contains: containsMatcherShader,
+const PROTOCOL_SHADERS: Record<MiningProtocol, string> = {
+  create2: create2ProtocolShader,
+  safe: safeProtocolShader,
+};
+
+const MATCHER_SHADERS: Record<MatcherKind, string> = {
+  prefix: [patternMatcherShader, prefixMatcherShader].join("\n"),
+  suffix: [patternMatcherShader, suffixMatcherShader].join("\n"),
+  contains: [patternMatcherShader, containsMatcherShader].join("\n"),
   leadingZeros: leadingZerosMatcherShader,
 };
 
-const COMMON_SHADER = [utilsShader, keccakShader, addressShader].join("\n");
-
-function assembleProtocolShaders(entrypointShader: string): Record<MatcherKind, string> {
-  return Object.fromEntries(
-    MATCHER_KINDS.map((matcherKind) => [
-      matcherKind,
-      [COMMON_SHADER, matcherShaders[matcherKind], entrypointShader].join("\n"),
-    ]),
-  ) as Record<MatcherKind, string>;
+function assembleShader(protocol: MiningProtocol, matcherKind: MatcherKind): string {
+  return [coreShader, MATCHER_SHADERS[matcherKind], PROTOCOL_SHADERS[protocol], kernelShader].join("\n");
 }
 
-const create2Shaders = assembleProtocolShaders(create2EntrypointShader);
-const safeShaders = assembleProtocolShaders(safeEntrypointShader);
+const create2Shaders = {
+  prefix: assembleShader("create2", "prefix"),
+  suffix: assembleShader("create2", "suffix"),
+  contains: assembleShader("create2", "contains"),
+  leadingZeros: assembleShader("create2", "leadingZeros"),
+} as const satisfies Record<MatcherKind, string>;
 
-export function getMiningShader(protocol: "create2" | "safe", matcherKind: MatcherKind): string {
+const safeShaders = {
+  prefix: assembleShader("safe", "prefix"),
+  suffix: assembleShader("safe", "suffix"),
+  contains: assembleShader("safe", "contains"),
+  leadingZeros: assembleShader("safe", "leadingZeros"),
+} as const satisfies Record<MatcherKind, string>;
+
+export function getMiningShader(protocol: MiningProtocol, matcherKind: MatcherKind): string {
   return protocol === "create2" ? create2Shaders[matcherKind] : safeShaders[matcherKind];
 }

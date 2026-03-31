@@ -4,17 +4,12 @@ const nextConfig: NextConfig = {
   output: "export",
   trailingSlash: true,
   reactStrictMode: true,
-  transpilePackages: ["saltshaker"],
   serverExternalPackages: ["pino-pretty", "lokijs", "encoding"],
   images: {
     unoptimized: true,
   },
   webpack: (config) => {
     config.externals.push("pino-pretty", "lokijs", "encoding");
-    config.module.rules.push({
-      test: /\.wgsl$/i,
-      type: "asset/source",
-    });
     config.resolve.fallback = {
       fs: false,
       buffer: false,

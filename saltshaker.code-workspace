@@ -16,4 +16,7 @@
       "path": ".",
     },
   ],
+  "settings": {
+    "cSpell.words": ["Wesl"],
+  },
 }

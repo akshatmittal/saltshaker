@@ -1,6 +1,43 @@
-fn theta(a: ptr<function, array<u64, 25>>) {
-    var b: array<u64, 5>;
-    var t: u64;
+alias xu64 = vec2<u32>;
+
+fn make_u64(low: u32, high: u32) -> xu64 {
+    return vec2<u32>(low, high);
+}
+
+fn xor_u64(a: xu64, b: xu64) -> xu64 {
+    return vec2<u32>(a.x ^ b.x, a.y ^ b.y);
+}
+
+fn and_u64(a: xu64, b: xu64) -> xu64 {
+    return vec2<u32>(a.x & b.x, a.y & b.y);
+}
+
+fn not_u64(a: xu64) -> xu64 {
+    return vec2<u32>(~a.x, ~a.y);
+}
+
+fn rol_lo(x: xu64, n: u32) -> xu64 {
+    return vec2<u32>((x.x << n) | (x.y >> (32u - n)), (x.y << n) | (x.x >> (32u - n)));
+}
+
+fn rol_hi(x: xu64, n: u32) -> xu64 {
+    let shift = n - 32u;
+    return vec2<u32>((x.y << shift) | (x.x >> (32u - shift)), (x.x << shift) | (x.y >> (32u - shift)));
+}
+
+fn add_u64(a: xu64, b: xu64) -> xu64 {
+    let low = a.x + b.x;
+    let carry = select(0u, 1u, low < a.x);
+    return vec2<u32>(low, a.y + b.y + carry);
+}
+
+fn swap_endian(x: u32) -> u32 {
+    return ((x & 0xFFu) << 24u) | ((x & 0xFF00u) << 8u) | ((x & 0xFF0000u) >> 8u) | ((x & 0xFF000000u) >> 24u);
+}
+
+fn theta(a: ptr<function, array<xu64, 25>>) {
+    var b: array<xu64, 5>;
+    var t: xu64;
     b[0] = xor_u64(xor_u64(xor_u64(xor_u64((*a)[0], (*a)[5]), (*a)[10]), (*a)[15]), (*a)[20]);
     b[1] = xor_u64(xor_u64(xor_u64(xor_u64((*a)[1], (*a)[6]), (*a)[11]), (*a)[16]), (*a)[21]);
     b[2] = xor_u64(xor_u64(xor_u64(xor_u64((*a)[2], (*a)[7]), (*a)[12]), (*a)[17]), (*a)[22]);
@@ -14,8 +51,8 @@ fn theta(a: ptr<function, array<u64, 25>>) {
     t = xor_u64(b[3], rol_lo(b[0], 1u)); (*a)[4] = xor_u64((*a)[4], t); (*a)[9] = xor_u64((*a)[9], t); (*a)[14] = xor_u64((*a)[14], t); (*a)[19] = xor_u64((*a)[19], t); (*a)[24] = xor_u64((*a)[24], t);
 }
 
-fn rhoPi(a: ptr<function, array<u64, 25>>) {
-    var t: u64; var b0: u64;
+fn rhoPi(a: ptr<function, array<xu64, 25>>) {
+    var t: xu64; var b0: xu64;
     t = (*a)[1]; b0 = (*a)[10]; (*a)[10] = rol_lo(t, 1u);
     t = b0; b0 = (*a)[7]; (*a)[7] = rol_lo(t, 3u);
     t = b0; b0 = (*a)[11]; (*a)[11] = rol_lo(t, 6u);
@@ -42,8 +79,8 @@ fn rhoPi(a: ptr<function, array<u64, 25>>) {
     t = b0; b0 = (*a)[1]; (*a)[1] = rol_hi(t, 44u);
 }
 
-fn chi(a: ptr<function, array<u64, 25>>) {
-    var b: array<u64, 5>;
+fn chi(a: ptr<function, array<xu64, 25>>) {
+    var b: array<xu64, 5>;
 
     b[0] = (*a)[0]; b[1] = (*a)[1]; b[2] = (*a)[2]; b[3] = (*a)[3]; b[4] = (*a)[4];
     (*a)[0] = xor_u64(b[0], and_u64(not_u64(b[1]), b[2]));
@@ -81,9 +118,11 @@ fn chi(a: ptr<function, array<u64, 25>>) {
     (*a)[24] = xor_u64(b[4], and_u64(not_u64(b[0]), b[1]));
 }
 
-fn iota(a: ptr<function, array<u64, 25>>, roundConst: u64) { (*a)[0] = xor_u64((*a)[0], roundConst); }
+fn iota(a: ptr<function, array<xu64, 25>>, roundConst: xu64) {
+    (*a)[0] = xor_u64((*a)[0], roundConst);
+}
 
-fn keccakf(a: ptr<function, array<u64, 25>>) {
+fn keccakf(a: ptr<function, array<xu64, 25>>) {
     theta(a); rhoPi(a); chi(a); iota(a, make_u64(0x00000001u, 0x00000000u));
     theta(a); rhoPi(a); chi(a); iota(a, make_u64(0x00008082u, 0x00000000u));
     theta(a); rhoPi(a); chi(a); iota(a, make_u64(0x0000808au, 0x80000000u));
@@ -111,7 +150,7 @@ fn keccakf(a: ptr<function, array<u64, 25>>) {
 }
 
 fn keccak256_64(input: array<u32, 16>) -> array<u32, 8> {
-    var state: array<u64, 25>;
+    var state: array<xu64, 25>;
     for (var i = 0u; i < 25u; i++) {
         state[i] = make_u64(0u, 0u);
     }
@@ -130,5 +169,67 @@ fn keccak256_64(input: array<u32, 16>) -> array<u32, 8> {
         result[i * 2u] = state[i].x;
         result[i * 2u + 1u] = state[i].y;
     }
+    return result;
+}
+
+fn keccak256_85_address(factory: array<u32, 5>, salt: array<u32, 8>, code_hash: array<u32, 8>) -> array<u32, 5> {
+    var state: array<xu64, 25>;
+    for (var i = 0u; i < 25u; i++) {
+        state[i] = make_u64(0u, 0u);
+    }
+
+    let s0_low = 0xFFu | (factory[0] << 8u);
+    let s0_high = (factory[0] >> 24u) | (factory[1] << 8u);
+    state[0] = make_u64(s0_low, s0_high);
+
+    let s1_low = (factory[1] >> 24u) | (factory[2] << 8u);
+    let s1_high = (factory[2] >> 24u) | (factory[3] << 8u);
+    state[1] = make_u64(s1_low, s1_high);
+
+    let s2_low = (factory[3] >> 24u) | (factory[4] << 8u);
+    let s2_high = (factory[4] >> 24u) | (salt[0] << 8u);
+    state[2] = make_u64(s2_low, s2_high);
+
+    let s3_low = (salt[0] >> 24u) | (salt[1] << 8u);
+    let s3_high = (salt[1] >> 24u) | (salt[2] << 8u);
+    state[3] = make_u64(s3_low, s3_high);
+
+    let s4_low = (salt[2] >> 24u) | (salt[3] << 8u);
+    let s4_high = (salt[3] >> 24u) | (salt[4] << 8u);
+    state[4] = make_u64(s4_low, s4_high);
+
+    let s5_low = (salt[4] >> 24u) | (salt[5] << 8u);
+    let s5_high = (salt[5] >> 24u) | (salt[6] << 8u);
+    state[5] = make_u64(s5_low, s5_high);
+
+    let s6_low = (salt[6] >> 24u) | (salt[7] << 8u);
+    let s6_high = (salt[7] >> 24u) | (code_hash[0] << 8u);
+    state[6] = make_u64(s6_low, s6_high);
+
+    let s7_low = (code_hash[0] >> 24u) | (code_hash[1] << 8u);
+    let s7_high = (code_hash[1] >> 24u) | (code_hash[2] << 8u);
+    state[7] = make_u64(s7_low, s7_high);
+
+    let s8_low = (code_hash[2] >> 24u) | (code_hash[3] << 8u);
+    let s8_high = (code_hash[3] >> 24u) | (code_hash[4] << 8u);
+    state[8] = make_u64(s8_low, s8_high);
+
+    let s9_low = (code_hash[4] >> 24u) | (code_hash[5] << 8u);
+    let s9_high = (code_hash[5] >> 24u) | (code_hash[6] << 8u);
+    state[9] = make_u64(s9_low, s9_high);
+
+    let s10_low = (code_hash[6] >> 24u) | (code_hash[7] << 8u);
+    let s10_high = (code_hash[7] >> 24u) | (0x01u << 8u);
+    state[10] = make_u64(s10_low, s10_high);
+
+    state[16] = make_u64(0u, 0x80000000u);
+    keccakf(&state);
+
+    var result: array<u32, 5>;
+    result[0] = state[1].y;
+    result[1] = state[2].x;
+    result[2] = state[2].y;
+    result[3] = state[3].x;
+    result[4] = state[3].y;
     return result;
 }

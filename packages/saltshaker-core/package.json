@@ -3,8 +3,16 @@
   "version": "0.0.0",
   "type": "module",
   "private": true,
-  "module": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    }
+  },
   "sideEffects": false,
   "files": [
     "dist/**",
@@ -12,7 +20,7 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "dev": "tsc --noEmit --watch --preserveWatchOutput",
+    "dev": "tsdown --watch",
     "prepack": "pnpm run build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
@@ -22,14 +30,7 @@
     "access": "public",
     "main": "./dist/index.mjs",
     "module": "./dist/index.mjs",
-    "types": "./dist/index.d.mts",
-    "exports": {
-      ".": {
-        "import": "./dist/index.mjs",
-        "default": "./dist/index.mjs",
-        "types": "./dist/index.d.mts"
-      }
-    }
+    "types": "./dist/index.d.mts"
   },
   "peerDependencies": {
     "viem": "catalog:"
@@ -39,7 +40,7 @@
     "@workspace/typescript-config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "vitest": "^3.2.4",
-    "viem": "catalog:"
+    "viem": "catalog:",
+    "vitest": "^3.2.4"
   }
 }
