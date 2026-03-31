@@ -60,10 +60,11 @@ export interface MiningResult {
   leadingZeroNibbles: number;
 }
 
-export type MiningStatus = "idle" | "running" | "stopped" | "error";
+export type MiningStatus = "idle" | "preparing" | "running" | "stopped" | "error";
 
 export interface MiningSessionState {
   status: MiningStatus;
+  statusDetail: string | null;
   error: string | null;
   hashrate: number;
   elapsedMs: number;

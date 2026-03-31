@@ -32,6 +32,7 @@ interface SessionRuntime {
 function initialState(): MiningSessionState {
   return {
     status: "idle",
+    statusDetail: null,
     error: null,
     hashrate: 0,
     elapsedMs: 0,
@@ -49,6 +50,17 @@ function setState(runtime: SessionRuntime, partial: Partial<MiningSessionState>)
   for (const listener of runtime.listeners) {
     listener(next);
   }
+}
+
+async function yieldToBrowser(): Promise<void> {
+  await new Promise<void>((resolve) => {
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(() => resolve());
+      return;
+    }
+
+    setTimeout(resolve, 0);
+  });
 }
 
 function updateMetrics(runtime: SessionRuntime): void {
@@ -73,7 +85,11 @@ function resetRunState(runtime: SessionRuntime): void {
 
 async function ensureResources(runtime: SessionRuntime): Promise<GpuResources> {
   if (runtime.resources === null) {
-    runtime.resources = await initializeGpuResources(runtime.job, runtime.matcher, runtime.config);
+    runtime.resources = await initializeGpuResources(runtime.job, runtime.matcher, runtime.config, {
+      onStatus(detail) {
+        setState(runtime, { status: "preparing", statusDetail: detail });
+      },
+    });
   }
 
   return runtime.resources;
@@ -81,6 +97,12 @@ async function ensureResources(runtime: SessionRuntime): Promise<GpuResources> {
 
 async function runLoop(runtime: SessionRuntime): Promise<void> {
   const resources = await ensureResources(runtime);
+  if (runtime.stopRequested) {
+    return;
+  }
+
+  runtime.startedAt = performance.now();
+  setState(runtime, { status: "running", statusDetail: null });
   const batchSize = BigInt(runtime.config.dispatchX * runtime.config.dispatchY * DEFAULT_WORKGROUP_SIZE);
 
   while (!runtime.stopRequested) {
@@ -134,7 +156,7 @@ export function createGpuMiningSession(
 
   return {
     async start() {
-      if (runtime.state.status === "running") {
+      if (runtime.state.status === "preparing" || runtime.state.status === "running") {
         return;
       }
 
@@ -143,20 +165,22 @@ export function createGpuMiningSession(
       }
 
       runtime.stopRequested = false;
-      runtime.startedAt = performance.now() - runtime.state.elapsedMs;
-      setState(runtime, { status: "running", error: null });
+      runtime.startedAt = null;
+      setState(runtime, { status: "preparing", statusDetail: "Preparing GPU miner", error: null });
+      await yieldToBrowser();
 
       try {
         runtime.loopPromise = runLoop(runtime);
         await runtime.loopPromise;
         destroyGpuResources(runtime.resources);
         runtime.resources = null;
-        setState(runtime, { status: "stopped" });
+        setState(runtime, { status: "stopped", statusDetail: null });
       } catch (error) {
         destroyGpuResources(runtime.resources);
         runtime.resources = null;
         setState(runtime, {
           status: "error",
+          statusDetail: null,
           error: error instanceof Error ? error.message : "WebGPU mining failed",
         });
         throw error;
@@ -168,7 +192,7 @@ export function createGpuMiningSession(
       if (runtime.state.status !== "running") {
         destroyGpuResources(runtime.resources);
         runtime.resources = null;
-        setState(runtime, { status: "stopped" });
+        setState(runtime, { status: "stopped", statusDetail: null });
       }
     },
     subscribe(listener) {

@@ -14,20 +14,42 @@ export interface GpuResources {
   constantsBuffer: GPUBuffer;
 }
 
+interface InitializeGpuResourcesOptions {
+  onStatus?: (detail: string) => void;
+}
+
 function adapterLabel(adapter: GPUAdapter): string | undefined {
   const pieces = [adapter.info.vendor, adapter.info.architecture].filter(Boolean);
   return pieces.length > 0 ? pieces.join(" ") : undefined;
+}
+
+async function yieldToBrowser(): Promise<void> {
+  await new Promise<void>((resolve) => {
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(() => resolve());
+      return;
+    }
+
+    setTimeout(resolve, 0);
+  });
+}
+
+async function reportStatus(options: InitializeGpuResourcesOptions, detail: string): Promise<void> {
+  options.onStatus?.(detail);
+  await yieldToBrowser();
 }
 
 export async function initializeGpuResources(
   job: PreparedJob,
   matcher: PreparedMatcher,
   config: SessionConfig,
+  options: InitializeGpuResourcesOptions = {},
 ): Promise<GpuResources> {
   if (typeof navigator === "undefined" || navigator.gpu === undefined) {
     throw new Error("WebGPU is not available in this browser");
   }
 
+  await reportStatus(options, "Requesting GPU adapter");
   const adapter = await navigator.gpu.requestAdapter({
     powerPreference: config.powerPreference ?? "high-performance",
   });
@@ -36,10 +58,21 @@ export async function initializeGpuResources(
     throw new Error("No WebGPU adapter was found");
   }
 
+  await reportStatus(options, "Requesting GPU device");
   const device = await adapter.requestDevice();
+
+  await reportStatus(options, "Preparing shader module");
   const module = device.createShaderModule({
     code: getMiningShader(job.protocol, matcher.type),
   });
+
+  await reportStatus(options, "Compiling compute pipeline");
+  const pipeline = await device.createComputePipelineAsync({
+    layout: "auto",
+    compute: { module, entryPoint: "main" },
+  });
+
+  await reportStatus(options, "Allocating GPU buffers");
   const constantsData = buildConstantsWords(job, matcher);
 
   const constantsBuffer = device.createBuffer({
@@ -62,11 +95,6 @@ export async function initializeGpuResources(
   const readbackBuffer = device.createBuffer({
     size: RESULT_BUFFER_SIZE,
     usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
-  });
-
-  const pipeline = device.createComputePipeline({
-    layout: "auto",
-    compute: { module, entryPoint: "main" },
   });
 
   const bindGroup = device.createBindGroup({

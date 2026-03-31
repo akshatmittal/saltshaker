@@ -232,7 +232,7 @@ export function MinerConsole() {
   }
 
   const topResults = sessionState?.results ?? [];
-  const running = sessionState?.status === "running";
+  const active = sessionState?.status === "preparing" || sessionState?.status === "running";
 
   return (
     <div className="flex flex-1 flex-col gap-2 py-4">
@@ -430,7 +430,7 @@ export function MinerConsole() {
             sessionState={sessionState}
             support={support}
             error={error}
-            running={running}
+            active={active}
             onStart={handleStart}
             onStop={handleStop}
           />

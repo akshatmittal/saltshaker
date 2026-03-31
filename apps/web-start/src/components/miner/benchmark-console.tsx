@@ -62,12 +62,17 @@ export function BenchmarkConsole() {
         if (nextState.error !== null) {
           setError(nextState.error);
         }
+        if (nextState.status === "running" && timerRef.current === null) {
+          const limit = Number.parseInt(durationMs, 10) || 10_000;
+          timerRef.current = setTimeout(() => {
+            session.stop();
+          }, limit);
+        }
+        if (nextState.status !== "running" && timerRef.current !== null) {
+          clearTimeout(timerRef.current);
+          timerRef.current = null;
+        }
       });
-
-      const limit = Number.parseInt(durationMs, 10) || 10_000;
-      timerRef.current = setTimeout(() => {
-        session.stop();
-      }, limit);
 
       void session.start().catch((startError) => {
         setError(startError instanceof Error ? startError.message : "Benchmark failed");
@@ -78,11 +83,14 @@ export function BenchmarkConsole() {
   }
 
   function handleStop() {
-    if (timerRef.current !== null) clearTimeout(timerRef.current);
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
     sessionRef.current?.stop();
   }
 
-  const running = sessionState?.status === "running";
+  const active = sessionState?.status === "preparing" || sessionState?.status === "running";
 
   return (
     <div className="flex flex-1 flex-col gap-4 py-8">
@@ -127,7 +135,7 @@ export function BenchmarkConsole() {
           sessionState={sessionState}
           support={support}
           error={error}
-          running={running}
+          active={active}
           startLabel="Run Benchmark"
           emptyMessage="No benchmark runs yet. Hit Run Benchmark to measure GPU throughput."
           onStart={handleRun}

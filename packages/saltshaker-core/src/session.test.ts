@@ -36,6 +36,7 @@ describe("createMiningSession", () => {
     expect(states).toEqual([
       {
         status: "idle",
+        statusDetail: null,
         error: null,
         hashrate: 0,
         elapsedMs: 0,
@@ -71,6 +72,7 @@ describe("createMiningSession", () => {
     await expect(session.start()).rejects.toThrow("WebGPU is not available in this browser");
     expect(states.at(-1)).toMatchObject({
       status: "error",
+      statusDetail: null,
       error: "WebGPU is not available in this browser",
     });
   });

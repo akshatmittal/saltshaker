@@ -59,7 +59,7 @@ export function TelemetryCard({
   sessionState,
   support,
   error,
-  running,
+  active,
   startLabel = "Start",
   emptyMessage,
   onStart,
@@ -68,7 +68,7 @@ export function TelemetryCard({
   sessionState: MiningSessionState | null;
   support: CheckWebGpuSupportResult;
   error: string | null;
-  running: boolean;
+  active: boolean;
   startLabel?: string;
   emptyMessage?: string;
   onStart: () => void;
@@ -83,15 +83,16 @@ export function TelemetryCard({
             <CardTitle>Live Session</CardTitle>
           </div>
           <Button
-            variant={running ? "destructive" : "default"}
+            variant={active ? "destructive" : "default"}
             disabled={!support.supported}
-            onClick={running ? onStop : onStart}
+            onClick={active ? onStop : onStart}
           >
-            {running ? <Square className="size-4 fill-current" /> : <Play className="size-4 fill-current" />}
-            {running ? "Stop" : startLabel}
+            {active ? <Square className="size-4 fill-current" /> : <Play className="size-4 fill-current" />}
+            {active ? "Stop" : startLabel}
           </Button>
         </div>
         {error !== null ? <p className="text-sm text-destructive">{error}</p> : null}
+        {sessionState?.statusDetail ? <p className="text-sm text-muted-foreground">{sessionState.statusDetail}</p> : null}
         {!support.supported ? (
           <p className="text-sm text-muted-foreground">
             This app does not fall back to CPU mining. It requires a browser with WebGPU enabled.
@@ -106,12 +107,12 @@ export function TelemetryCard({
             <StatCard
               label="Status"
               value={sessionState?.status ?? "idle"}
-              highlight={running}
+              highlight={active}
             />
             <StatCard
               label="Hash Rate"
               value={formatHashRate(sessionState?.hashrate ?? 0)}
-              highlight={running}
+              highlight={active}
             />
             <StatCard
               label="Elapsed"
