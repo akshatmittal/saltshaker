@@ -9,7 +9,7 @@
   "endOfLine": "lf",
   "trailingComma": "all",
   "plugins": ["prettier-plugin-tailwindcss"],
-  "tailwindStylesheet": "apps/web/src/app/globals.css",
+  "tailwindStylesheet": "apps/web-start/src/styles.css",
   "tailwindFunctions": ["cn", "cva"],
   "overrides": [
     {

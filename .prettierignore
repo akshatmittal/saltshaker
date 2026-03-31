@@ -7,3 +7,4 @@ pnpm-lock.yaml
 .pnpm-store/
 worker-configuration.d.ts
 .output
+routeTree.gen.ts

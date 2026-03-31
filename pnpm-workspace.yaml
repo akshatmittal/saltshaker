@@ -17,4 +17,8 @@ catalog:
   wagmi: ^2.19.5
   wrangler: ^4.76.0
 
-catalogMode: manual
+catalogMode: prefer
+
+dedupeDirectDeps: true
+dedupePeers: true
+blockExoticSubdeps: true

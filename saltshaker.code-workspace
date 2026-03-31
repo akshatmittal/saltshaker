@@ -1,10 +1,6 @@
 {
   "folders": [
     {
-      "name": "saltshaker-web",
-      "path": "apps/web",
-    },
-    {
       "name": "saltshaker-start",
       "path": "apps/web-start",
     },
@@ -16,7 +12,4 @@
       "path": ".",
     },
   ],
-  "settings": {
-    "cSpell.words": ["Wesl"],
-  },
 }

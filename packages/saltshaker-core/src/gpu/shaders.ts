@@ -30,20 +30,27 @@ function assembleShader(protocol: MiningProtocol, matcherKind: MatcherKind): str
   return [coreShader, MATCHER_SHADERS[matcherKind], PROTOCOL_SHADERS[protocol], kernelShader].join("\n");
 }
 
-const create2Shaders = {
+const create2Shaders: Record<MatcherKind, string> = {
   prefix: assembleShader("create2", "prefix"),
   suffix: assembleShader("create2", "suffix"),
   contains: assembleShader("create2", "contains"),
   leadingZeros: assembleShader("create2", "leadingZeros"),
-} as const satisfies Record<MatcherKind, string>;
+};
 
-const safeShaders = {
+const safeShaders: Record<MatcherKind, string> = {
   prefix: assembleShader("safe", "prefix"),
   suffix: assembleShader("safe", "suffix"),
   contains: assembleShader("safe", "contains"),
   leadingZeros: assembleShader("safe", "leadingZeros"),
-} as const satisfies Record<MatcherKind, string>;
+};
 
 export function getMiningShader(protocol: MiningProtocol, matcherKind: MatcherKind): string {
-  return protocol === "create2" ? create2Shaders[matcherKind] : safeShaders[matcherKind];
+  if (protocol === "create2") {
+    return create2Shaders[matcherKind];
+  }
+  if (protocol === "safe") {
+    return safeShaders[matcherKind];
+  }
+
+  throw new Error(`Unsupported protocol: ${protocol}`);
 }
