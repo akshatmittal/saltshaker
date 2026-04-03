@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Copy } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { AlignLeft, AlignRight, ChevronDown, ChevronUp, Copy, Hash, Search, Settings } from "lucide-react";
 import { toHex, type Hex } from "viem";
 import {
   checkWebGpuSupport,
@@ -16,16 +16,31 @@ import {
 } from "saltshaker";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { EmptyState, TelemetryCard } from "@/components/miner/shared";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 type Protocol = "create2" | "safe";
+
+const MATCHER_OPTIONS: { type: MatcherKind; icon: React.ElementType; label: string }[] = [
+  { type: "leadingZeros", icon: Hash, label: "Leading Zeros" },
+  { type: "prefix", icon: AlignLeft, label: "Prefix" },
+  { type: "suffix", icon: AlignRight, label: "Suffix" },
+  { type: "contains", icon: Search, label: "Contains" },
+];
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
 const DEFAULT_SAFE_FACTORY = "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2" as const;
@@ -88,6 +103,8 @@ export function MinerConsole() {
   const [safeForm, setSafeForm] = useState(defaultSafe);
   const [matcher, setMatcher] = useState(defaultMatcher);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [maxResults, setMaxResults] = useState(10);
+  const [stopWhenFound, setStopWhenFound] = useState(true);
   const [support, setSupport] = useState<CheckWebGpuSupportResult>({
     supported: false,
     message: "Checking WebGPU support...",
@@ -105,6 +122,17 @@ export function MinerConsole() {
       sessionRef.current?.stop();
     };
   }, []);
+
+  useEffect(() => {
+    if (
+      stopWhenFound &&
+      sessionState !== null &&
+      sessionState.results.length > 0 &&
+      (sessionState.status === "running" || sessionState.status === "preparing")
+    ) {
+      sessionRef.current?.stop();
+    }
+  }, [stopWhenFound, sessionState]);
 
   function updateCreate2<K extends keyof Create2FormState>(key: K, value: Create2FormState[K]) {
     setCreate2Form((current) => ({ ...current, [key]: value }));
@@ -215,7 +243,7 @@ export function MinerConsole() {
 
     try {
       sessionRef.current?.stop();
-      const session = createMiningSession({ job: buildJob(), matcher: buildMatcher() });
+      const session = createMiningSession({ job: buildJob(), matcher: buildMatcher(), maxResults });
       sessionRef.current = session;
       attachSession(session);
       void session.start().catch((startError) => {
@@ -240,18 +268,26 @@ export function MinerConsole() {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardDescription>Preset</CardDescription>
               <CardTitle>Protocol</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <NativeSelect
-                className="w-full"
-                value={protocol}
-                onChange={(event) => setProtocol(event.target.value as Protocol)}
-              >
-                <NativeSelectOption value="create2">CREATE2</NativeSelectOption>
-                <NativeSelectOption value="safe">Safe</NativeSelectOption>
-              </NativeSelect>
+              <div className="grid grid-cols-2 gap-1 rounded-xl border bg-muted p-1">
+                {(["create2", "safe"] as Protocol[]).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    className={cn(
+                      "rounded-lg px-3 py-1.5 text-sm font-medium transition-all",
+                      protocol === p
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                    onClick={() => setProtocol(p)}
+                  >
+                    {p === "create2" ? "CREATE2" : "Safe"}
+                  </button>
+                ))}
+              </div>
               <Separator />
               {protocol === "create2" ? (
                 <div className="grid gap-4">
@@ -387,38 +423,49 @@ export function MinerConsole() {
 
           <Card>
             <CardHeader>
-              <CardDescription>Filters</CardDescription>
               <CardTitle>Matcher</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4">
                 <Field>
-                  <FieldLabel>Matcher Type</FieldLabel>
-                  <NativeSelect
-                    className="w-full"
-                    value={matcher.type}
-                    onChange={(event) => updateMatcher("type", event.target.value as MatcherKind)}
-                  >
-                    <NativeSelectOption value="prefix">Prefix</NativeSelectOption>
-                    <NativeSelectOption value="suffix">Suffix</NativeSelectOption>
-                    <NativeSelectOption value="contains">Contains</NativeSelectOption>
-                    <NativeSelectOption value="leadingZeros">Leading zeros</NativeSelectOption>
-                  </NativeSelect>
+                  <div className="grid grid-cols-2 gap-2">
+                    {MATCHER_OPTIONS.map(({ type, icon: Icon, label }) => (
+                      <button
+                        key={type}
+                        type="button"
+                        className={cn(
+                          "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left transition-all duration-150",
+                          matcher.type === type
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-muted-foreground/40 hover:bg-muted/50",
+                        )}
+                        onClick={() => updateMatcher("type", type)}
+                      >
+                        <Icon
+                          className={cn(
+                            "size-4 shrink-0",
+                            matcher.type === type ? "text-primary" : "text-muted-foreground",
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            "text-xs font-semibold",
+                            matcher.type === type ? "text-primary" : "text-foreground",
+                          )}
+                        >
+                          {label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </Field>
                 <Field>
-                  <FieldLabel>
-                    {matcher.type === "leadingZeros" ? "Minimum Leading Zero Nibbles" : "Matcher Value"}
-                  </FieldLabel>
+                  <FieldLabel>{matcher.type === "leadingZeros" ? "Minimum Leading Zeros" : "Matcher Value"}</FieldLabel>
                   <Input
                     value={matcher.value}
                     onChange={(event) => updateMatcher("value", event.target.value)}
                     className="font-mono"
                   />
-                  <FieldDescription>
-                    {matcher.type === "leadingZeros"
-                      ? "Whole number of leading zero hex nibbles required before a result is accepted. Score equals the zero-nibble count."
-                      : "Hex string, with or without 0x prefix. Odd-length values are allowed."}
-                  </FieldDescription>
                 </Field>
               </div>
             </CardContent>
@@ -436,8 +483,86 @@ export function MinerConsole() {
           />
           <Card>
             <CardHeader>
-              <CardDescription>Top 25</CardDescription>
-              <CardTitle>Ranked Results</CardTitle>
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-1">
+                  <CardTitle>Ranked Results</CardTitle>
+                </div>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                    >
+                      <Settings className="size-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Results Settings</DialogTitle>
+                      <DialogDescription>
+                        Configure how results are collected during the mining session.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-5">
+                      <Field>
+                        <FieldLabel>Max Results</FieldLabel>
+                        <div className="flex items-center gap-2">
+                          {[10, 25, 50, 100].map((n) => (
+                            <button
+                              key={n}
+                              type="button"
+                              className={cn(
+                                "flex h-8 min-w-10 items-center justify-center rounded-lg border px-2 text-sm font-medium transition-all",
+                                maxResults === n
+                                  ? "border-primary bg-primary/5 text-primary"
+                                  : "border-border text-muted-foreground hover:border-muted-foreground/40 hover:text-foreground",
+                              )}
+                              onClick={() => setMaxResults(n)}
+                            >
+                              {n}
+                            </button>
+                          ))}
+                        </div>
+                        <FieldDescription>Number of top results to keep ranked during the session.</FieldDescription>
+                      </Field>
+                      <Field>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={stopWhenFound}
+                          className={cn(
+                            "flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-sm transition-all",
+                            stopWhenFound
+                              ? "border-primary bg-primary/5"
+                              : "border-border hover:border-muted-foreground/40 hover:bg-muted/50",
+                          )}
+                          onClick={() => setStopWhenFound((v) => !v)}
+                        >
+                          <span className={cn("font-medium", stopWhenFound ? "text-primary" : "text-foreground")}>
+                            Stop on first match
+                          </span>
+                          <div
+                            className={cn(
+                              "relative h-5 w-9 rounded-full border transition-colors",
+                              stopWhenFound ? "border-primary bg-primary" : "border-border bg-muted",
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                "absolute top-0.5 size-3.5 rounded-full bg-white shadow-sm transition-transform",
+                                stopWhenFound ? "translate-x-4.5" : "translate-x-0.5",
+                              )}
+                            />
+                          </div>
+                        </button>
+                        <FieldDescription>
+                          Automatically stop mining as soon as one valid result is found.
+                        </FieldDescription>
+                      </Field>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {topResults.length === 0 ? (
@@ -448,7 +573,6 @@ export function MinerConsole() {
                     <TableRow>
                       <TableHead className="w-8">#</TableHead>
                       <TableHead className="w-16">Score</TableHead>
-                      <TableHead className="w-16">Zeros</TableHead>
                       <TableHead>Result</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -457,7 +581,6 @@ export function MinerConsole() {
                       <TableRow key={`${result.address}-${result.nonce.toString()}`}>
                         <TableCell className="text-xs text-muted-foreground">{index + 1}</TableCell>
                         <TableCell className="font-medium">{result.score}</TableCell>
-                        <TableCell className="font-medium">{result.leadingZeroNibbles}</TableCell>
                         <TableCell className="min-w-0">
                           <div className="">
                             <div className="flex min-w-0 items-center gap-2">

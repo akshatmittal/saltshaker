@@ -12,4 +12,7 @@
       "path": ".",
     },
   ],
+  "settings": {
+    "js/ts.tsdk.path": "workspace-root/node_modules/typescript/lib",
+  },
 }

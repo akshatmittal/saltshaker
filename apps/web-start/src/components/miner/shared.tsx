@@ -79,8 +79,24 @@ export function TelemetryCard({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <CardDescription>Telemetry</CardDescription>
-            <CardTitle>Live Session</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>Telemetry</CardTitle>
+              {active && (
+                <span className="relative flex size-2">
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+                  <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+                </span>
+              )}
+            </div>
+            <CardDescription className={cn((error !== null || !support.supported) && "text-destructive")}>
+              {error ??
+                (!support.supported
+                  ? "WebGPU is not supported in this browser."
+                  : (sessionState?.statusDetail ??
+                    (sessionState?.status
+                      ? sessionState.status.charAt(0).toUpperCase() + sessionState.status.slice(1)
+                      : "Idle")))}
+            </CardDescription>
           </div>
           <Button
             variant={active ? "destructive" : "default"}
@@ -91,13 +107,6 @@ export function TelemetryCard({
             {active ? "Stop" : startLabel}
           </Button>
         </div>
-        {error !== null ? <p className="text-sm text-destructive">{error}</p> : null}
-        {sessionState?.statusDetail ? <p className="text-sm text-muted-foreground">{sessionState.statusDetail}</p> : null}
-        {!support.supported ? (
-          <p className="text-sm text-muted-foreground">
-            This app does not fall back to CPU mining. It requires a browser with WebGPU enabled.
-          </p>
-        ) : null}
       </CardHeader>
       <CardContent className="space-y-4">
         {sessionState === null && emptyMessage ? (
