@@ -49,6 +49,8 @@ export function useMiningSession() {
     unsubscribeRef.current = null;
   }
 
+  const active = sessionState?.status === "preparing" || sessionState?.status === "running";
+
   return {
     support,
     sessionState,
@@ -56,6 +58,7 @@ export function useMiningSession() {
     error,
     setError,
     sessionRef,
+    active,
     subscribeToSession,
     setActiveSession,
     stopSession,

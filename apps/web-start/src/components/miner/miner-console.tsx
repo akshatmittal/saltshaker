@@ -4,6 +4,7 @@ import { AlignLeft, AlignRight, ChevronDown, ChevronUp, Copy, Hash, Search, Sett
 import { createMiningSession, type AddressMatcherSpec, type MatcherKind, type MiningJob } from "saltshaker";
 import { toHex, type Hex } from "viem";
 
+import { WorkbenchLayout } from "@/components/miner/workbench-layout";
 import { EmptyState, TelemetryCard } from "@/components/miner/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,8 +90,17 @@ const defaultMatcher: MatcherFormState = {
 };
 
 export function MinerConsole() {
-  const { support, sessionState, error, setError, sessionRef, subscribeToSession, setActiveSession, stopSession } =
-    useMiningSession();
+  const {
+    support,
+    sessionState,
+    error,
+    setError,
+    sessionRef,
+    active,
+    subscribeToSession,
+    setActiveSession,
+    stopSession,
+  } = useMiningSession();
 
   const [protocol, setProtocol] = useState<Protocol>("create2");
   const [create2Form, setCreate2Form] = useState(defaultCreate2);
@@ -109,7 +119,7 @@ export function MinerConsole() {
     ) {
       sessionRef.current?.stop();
     }
-  }, [stopWhenFound, sessionState, sessionRef.current]);
+  }, [stopWhenFound, sessionState, sessionRef]);
 
   function updateCreate2<K extends keyof Create2FormState>(key: K, value: Create2FormState[K]) {
     setCreate2Form((current) => ({ ...current, [key]: value }));
@@ -226,12 +236,11 @@ export function MinerConsole() {
   }
 
   const topResults = sessionState?.results ?? [];
-  const active = sessionState?.status === "preparing" || sessionState?.status === "running";
 
   return (
-    <div className="flex flex-1 flex-col gap-2 py-4">
-      <section className="grid grid-cols-3 gap-4">
-        <div className="space-y-4">
+    <WorkbenchLayout
+      sidebar={
+        <>
           <Card>
             <CardHeader>
               <CardTitle>Protocol</CardTitle>
@@ -436,148 +445,146 @@ export function MinerConsole() {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        <div className="col-span-2 space-y-4">
-          <TelemetryCard
-            sessionState={sessionState}
-            support={support}
-            error={error}
-            active={active}
-            onStart={handleStart}
-            onStop={handleStop}
-          />
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between gap-2">
-                <div className="space-y-1">
-                  <CardTitle>Ranked Results</CardTitle>
-                </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                    >
-                      <Settings className="size-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Results Settings</DialogTitle>
-                      <DialogDescription>
-                        Configure how results are collected during the mining session.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-5">
-                      <Field>
-                        <FieldLabel>Max Results</FieldLabel>
-                        <div className="flex items-center gap-2">
-                          {[10, 25, 50, 100].map((n) => (
-                            <button
-                              key={n}
-                              type="button"
-                              className={cn(
-                                "flex h-8 min-w-10 items-center justify-center rounded-lg border px-2 text-sm font-medium transition-all",
-                                maxResults === n
-                                  ? "border-primary bg-primary/5 text-primary"
-                                  : "border-border text-muted-foreground hover:border-muted-foreground/40 hover:text-foreground",
-                              )}
-                              onClick={() => setMaxResults(n)}
-                            >
-                              {n}
-                            </button>
-                          ))}
-                        </div>
-                        <FieldDescription>Number of top results to keep ranked during the session.</FieldDescription>
-                      </Field>
-                      <Field>
+        </>
+      }
+    >
+      <TelemetryCard
+        sessionState={sessionState}
+        support={support}
+        error={error}
+        active={active}
+        onStart={handleStart}
+        onStop={handleStop}
+      />
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between gap-2">
+            <div className="space-y-1">
+              <CardTitle>Ranked Results</CardTitle>
+            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                >
+                  <Settings className="size-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Results Settings</DialogTitle>
+                  <DialogDescription>
+                    Configure how results are collected during the mining session.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-5">
+                  <Field>
+                    <FieldLabel>Max Results</FieldLabel>
+                    <div className="flex items-center gap-2">
+                      {[10, 25, 50, 100].map((n) => (
                         <button
+                          key={n}
                           type="button"
-                          role="switch"
-                          aria-checked={stopWhenFound}
                           className={cn(
-                            "flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-sm transition-all",
-                            stopWhenFound
-                              ? "border-primary bg-primary/5"
-                              : "border-border hover:border-muted-foreground/40 hover:bg-muted/50",
+                            "flex h-8 min-w-10 items-center justify-center rounded-lg border px-2 text-sm font-medium transition-all",
+                            maxResults === n
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-border text-muted-foreground hover:border-muted-foreground/40 hover:text-foreground",
                           )}
-                          onClick={() => setStopWhenFound((v) => !v)}
+                          onClick={() => setMaxResults(n)}
                         >
-                          <span className={cn("font-medium", stopWhenFound ? "text-primary" : "text-foreground")}>
-                            Stop on first match
-                          </span>
-                          <div
-                            className={cn(
-                              "relative h-5 w-9 rounded-full border transition-colors",
-                              stopWhenFound ? "border-primary bg-primary" : "border-border bg-muted",
-                            )}
-                          >
-                            <div
-                              className={cn(
-                                "absolute top-0.5 size-3.5 rounded-full bg-white shadow-sm transition-transform",
-                                stopWhenFound ? "translate-x-4.5" : "translate-x-0.5",
-                              )}
-                            />
-                          </div>
+                          {n}
                         </button>
-                        <FieldDescription>
-                          Automatically stop mining as soon as one valid result is found.
-                        </FieldDescription>
-                      </Field>
+                      ))}
                     </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {topResults.length === 0 ? (
-                <EmptyState>No GPU-verified winners yet. Start mining to populate the ranked address table.</EmptyState>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-8">#</TableHead>
-                      <TableHead className="w-16">Score</TableHead>
-                      <TableHead>Result</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {topResults.map((result, index) => (
-                      <TableRow key={`${result.address}-${result.nonce.toString()}`}>
-                        <TableCell className="text-xs text-muted-foreground">{index + 1}</TableCell>
-                        <TableCell className="font-medium">{result.score}</TableCell>
-                        <TableCell className="min-w-0">
-                          <div className="">
-                            <div className="flex min-w-0 items-center gap-2">
-                              <HighlightedAddress
-                                address={result.address}
-                                zeros={result.leadingZeroNibbles}
-                              />
-                              <CopyValueButton
-                                value={result.address}
-                                label="Copy address"
-                              />
-                            </div>
-                            <div className="flex min-w-0 items-center gap-2">
-                              <p className="truncate font-mono text-sm text-muted-foreground">{result.salt}</p>
-                              <CopyValueButton
-                                value={result.salt}
-                                label="Copy salt"
-                              />
-                            </div>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-    </div>
+                    <FieldDescription>Number of top results to keep ranked during the session.</FieldDescription>
+                  </Field>
+                  <Field>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={stopWhenFound}
+                      className={cn(
+                        "flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-sm transition-all",
+                        stopWhenFound
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-muted-foreground/40 hover:bg-muted/50",
+                      )}
+                      onClick={() => setStopWhenFound((v) => !v)}
+                    >
+                      <span className={cn("font-medium", stopWhenFound ? "text-primary" : "text-foreground")}>
+                        Stop on first match
+                      </span>
+                      <div
+                        className={cn(
+                          "relative h-5 w-9 rounded-full border transition-colors",
+                          stopWhenFound ? "border-primary bg-primary" : "border-border bg-muted",
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "absolute top-0.5 size-3.5 rounded-full bg-white shadow-sm transition-transform",
+                            stopWhenFound ? "translate-x-4.5" : "translate-x-0.5",
+                          )}
+                        />
+                      </div>
+                    </button>
+                    <FieldDescription>
+                      Automatically stop mining as soon as one valid result is found.
+                    </FieldDescription>
+                  </Field>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {topResults.length === 0 ? (
+            <EmptyState>No GPU-verified winners yet. Start mining to populate the ranked address table.</EmptyState>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-8">#</TableHead>
+                  <TableHead className="w-16">Score</TableHead>
+                  <TableHead>Result</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {topResults.map((result, index) => (
+                  <TableRow key={`${result.address}-${result.nonce.toString()}`}>
+                    <TableCell className="text-xs text-muted-foreground">{index + 1}</TableCell>
+                    <TableCell className="font-medium">{result.score}</TableCell>
+                    <TableCell className="min-w-0">
+                      <div className="">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <HighlightedAddress
+                            address={result.address}
+                            zeros={result.leadingZeroNibbles}
+                          />
+                          <CopyValueButton
+                            value={result.address}
+                            label="Copy address"
+                          />
+                        </div>
+                        <div className="flex min-w-0 items-center gap-2">
+                          <p className="truncate font-mono text-sm text-muted-foreground">{result.salt}</p>
+                          <CopyValueButton
+                            value={result.salt}
+                            label="Copy salt"
+                          />
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </WorkbenchLayout>
   );
 }
 
