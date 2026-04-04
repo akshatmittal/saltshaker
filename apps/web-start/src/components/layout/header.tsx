@@ -1,5 +1,3 @@
-"use client";
-
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Gauge, Moon, Satellite, Sparkles, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -73,7 +71,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs text-muted-foreground">
             <span className="inline-block size-1.5 rounded-full bg-emerald-500" />
-            GPU only
+            WebGPU
           </div>
           <Button
             variant="ghost"

@@ -1,5 +1,3 @@
-"use client";
-
 import type { ReactNode } from "react";
 
 import type { LucideIcon } from "lucide-react";
@@ -12,15 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-
-export function HeroPanel({ children }: { children: ReactNode }) {
-  return (
-    <Card className="relative overflow-hidden bg-linear-to-br from-background via-background to-primary/5">
-      <div className="pointer-events-none absolute -top-16 -right-16 size-48 rounded-full bg-primary/10 blur-3xl" />
-      <CardContent className="relative p-6">{children}</CardContent>
-    </Card>
-  );
-}
 
 export function StatCard({ label, value, highlight }: { label: string; value: ReactNode; highlight?: boolean }) {
   return (
@@ -51,6 +40,7 @@ export function ReadOnlyField({ label, value }: { label: string; value: string }
       <Input
         value={value}
         readOnly
+        disabled
         className="font-mono"
       />
     </Field>
@@ -141,11 +131,6 @@ export function formatHashRate(value: number): string {
   if (value >= 1e6) return `${(value / 1e6).toFixed(2)} MH/s`;
   if (value >= 1e3) return `${(value / 1e3).toFixed(2)} KH/s`;
   return `${value.toFixed(0)} H/s`;
-}
-
-export function formatBigInt(value: bigint): string {
-  const raw = value.toString();
-  return raw.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 export function formatDuration(durationMs: number): string {

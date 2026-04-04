@@ -3,15 +3,11 @@ import type { AddressMatcherSpec, CheckWebGpuSupportResult, CreateMiningSessionI
 
 import { DEFAULT_DISPATCH_X, DEFAULT_DISPATCH_Y, MAX_RESULTS } from "./constants";
 import { createGpuMiningSession } from "./gpu/runtime";
+import { adapterLabel } from "./internal/gpu-browser";
 import { prepareJob } from "./internal/jobs";
 import { prepareMatcher } from "./internal/matchers/prepare";
 
 const DEFAULT_MATCHER_SPEC: AddressMatcherSpec = { type: "leadingZeros", value: 8 };
-
-function adapterLabel(adapter: GPUAdapter): string | undefined {
-  const pieces = [adapter.info.vendor, adapter.info.architecture].filter(Boolean);
-  return pieces.length > 0 ? pieces.join(" ") : undefined;
-}
 
 function resolveConfig(input: CreateMiningSessionInput): SessionConfig {
   return {

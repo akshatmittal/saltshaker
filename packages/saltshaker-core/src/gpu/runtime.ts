@@ -5,6 +5,7 @@ import { DEFAULT_WORKGROUP_SIZE } from "../constants";
 import { deriveResult } from "../internal/jobs";
 import { mergeResult } from "../internal/matchers/results";
 import { scoreAddress } from "../internal/matchers/score";
+import { yieldToBrowser } from "../internal/gpu-browser";
 import { splitBigIntToU32, toGpuBufferSource } from "../internal/words";
 import { decodeResultWords } from "./packing";
 import {
@@ -51,17 +52,6 @@ function setState(runtime: SessionRuntime, partial: Partial<MiningSessionState>)
   for (const listener of runtime.listeners) {
     listener(next);
   }
-}
-
-async function yieldToBrowser(): Promise<void> {
-  await new Promise<void>((resolve) => {
-    if (typeof requestAnimationFrame === "function") {
-      requestAnimationFrame(() => resolve());
-      return;
-    }
-
-    setTimeout(resolve, 0);
-  });
 }
 
 function updateMetrics(runtime: SessionRuntime): void {

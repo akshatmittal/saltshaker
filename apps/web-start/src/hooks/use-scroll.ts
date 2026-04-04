@@ -1,4 +1,3 @@
-"use client";
 import { useEffect, useState } from "react";
 
 export function useScroll(downThreshold: number, upThreshold?: number) {

@@ -1,4 +1,3 @@
-export { STANDARDIZED_CREATE2_BENCHMARK_PRESET } from "./constants";
 export { checkWebGpuSupport, createMiningSession } from "./session";
 export type {
   AddressMatcherSpec,

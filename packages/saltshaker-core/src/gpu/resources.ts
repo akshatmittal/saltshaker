@@ -1,5 +1,6 @@
 import type { PreparedJob, PreparedMatcher, SessionConfig } from "../internal/types";
 
+import { adapterLabel, yieldToBrowser } from "../internal/gpu-browser";
 import { toGpuBufferSource } from "../internal/words";
 import { buildConstantsWords, createEmptyResultWords, RESULT_BUFFER_SIZE } from "./packing";
 import { getMiningShader } from "./shaders";
@@ -17,22 +18,6 @@ export interface GpuResources {
 
 interface InitializeGpuResourcesOptions {
   onStatus?: (detail: string) => void;
-}
-
-function adapterLabel(adapter: GPUAdapter): string | undefined {
-  const pieces = [adapter.info.vendor, adapter.info.architecture].filter(Boolean);
-  return pieces.length > 0 ? pieces.join(" ") : undefined;
-}
-
-async function yieldToBrowser(): Promise<void> {
-  await new Promise<void>((resolve) => {
-    if (typeof requestAnimationFrame === "function") {
-      requestAnimationFrame(() => resolve());
-      return;
-    }
-
-    setTimeout(resolve, 0);
-  });
 }
 
 async function reportStatus(options: InitializeGpuResourcesOptions, detail: string): Promise<void> {

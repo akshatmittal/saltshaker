@@ -122,7 +122,7 @@ importers:
         version: 2.47.10(bufferutil@4.1.0)(typescript@6.0.2)(utf-8-validate@6.0.6)(zod@3.25.76)
     devDependencies:
       '@tanstack/devtools-vite':
-        specifier: latest
+        specifier: ^0.6.0
         version: 0.6.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)(vite@8.0.3)
       '@types/node':
         specifier: 'catalog:'
@@ -1089,8 +1089,8 @@ packages:
   '@radix-ui/react-compose-refs@1.1.2':
     resolution: {integrity: sha512-z4eqJvfiNnFMHIIvXP3CY57y2WJs5g2v3X0zm9mEJkrkNv4rDxu+sg9Jh8EkXyeqBkB7SOcboo9dMVqhyrACIg==}
     peerDependencies:
-      '@types/react': ^19.2.14
-      react: ^19.2.4
+      '@types/react': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
         optional: true

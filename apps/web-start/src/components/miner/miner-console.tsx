@@ -1,19 +1,7 @@
-"use client";
-
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { AlignLeft, AlignRight, ChevronDown, ChevronUp, Copy, Hash, Search, Settings } from "lucide-react";
-import {
-  checkWebGpuSupport,
-  createMiningSession,
-  STANDARDIZED_CREATE2_BENCHMARK_PRESET,
-  type AddressMatcherSpec,
-  type CheckWebGpuSupportResult,
-  type MatcherKind,
-  type MiningSession,
-  type MiningJob,
-  type MiningSessionState,
-} from "saltshaker";
+import { createMiningSession, type AddressMatcherSpec, type MatcherKind, type MiningJob } from "saltshaker";
 import { toHex, type Hex } from "viem";
 
 import { EmptyState, TelemetryCard } from "@/components/miner/shared";
@@ -32,6 +20,8 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { useMiningSession } from "@/hooks/use-mining-session";
+import { STANDARDIZED_CREATE2_BENCHMARK_PRESET } from "@/lib/standardized-create2-benchmark-preset";
 import { cn } from "@/lib/utils";
 
 type Protocol = "create2" | "safe";
@@ -99,6 +89,9 @@ const defaultMatcher: MatcherFormState = {
 };
 
 export function MinerConsole() {
+  const { support, sessionState, error, setError, sessionRef, subscribeToSession, setActiveSession, stopSession } =
+    useMiningSession();
+
   const [protocol, setProtocol] = useState<Protocol>("create2");
   const [create2Form, setCreate2Form] = useState(defaultCreate2);
   const [safeForm, setSafeForm] = useState(defaultSafe);
@@ -106,23 +99,6 @@ export function MinerConsole() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [maxResults, setMaxResults] = useState(10);
   const [stopWhenFound, setStopWhenFound] = useState(true);
-  const [support, setSupport] = useState<CheckWebGpuSupportResult>({
-    supported: false,
-    message: "Checking WebGPU support...",
-  });
-  const [sessionState, setSessionState] = useState<MiningSessionState | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const sessionRef = useRef<MiningSession | null>(null);
-  const unsubscribeRef = useRef<(() => void) | null>(null);
-
-  useEffect(() => {
-    checkWebGpuSupport().then(setSupport);
-    return () => {
-      unsubscribeRef.current?.();
-      sessionRef.current?.stop();
-    };
-  }, []);
 
   useEffect(() => {
     if (
@@ -133,7 +109,7 @@ export function MinerConsole() {
     ) {
       sessionRef.current?.stop();
     }
-  }, [stopWhenFound, sessionState]);
+  }, [stopWhenFound, sessionState, sessionRef.current]);
 
   function updateCreate2<K extends keyof Create2FormState>(key: K, value: Create2FormState[K]) {
     setCreate2Form((current) => ({ ...current, [key]: value }));
@@ -224,16 +200,6 @@ export function MinerConsole() {
     };
   }
 
-  function attachSession(session: MiningSession) {
-    unsubscribeRef.current?.();
-    unsubscribeRef.current = session.subscribe((nextState) => {
-      setSessionState(nextState);
-      if (nextState.error !== null) {
-        setError(nextState.error);
-      }
-    });
-  }
-
   function handleStart() {
     setError(null);
 
@@ -243,10 +209,10 @@ export function MinerConsole() {
     }
 
     try {
-      sessionRef.current?.stop();
+      stopSession();
       const session = createMiningSession({ job: buildJob(), matcher: buildMatcher(), maxResults });
-      sessionRef.current = session;
-      attachSession(session);
+      setActiveSession(session);
+      subscribeToSession(session);
       void session.start().catch((startError) => {
         setError(startError instanceof Error ? startError.message : "Failed to start mining");
       });
@@ -256,8 +222,7 @@ export function MinerConsole() {
   }
 
   function handleStop() {
-    sessionRef.current?.stop();
-    setSessionState(null);
+    stopSession({ clearState: true });
   }
 
   const topResults = sessionState?.results ?? [];
