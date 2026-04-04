@@ -407,7 +407,8 @@ export function MinerConsole() {
                       placeholder="Leave blank for zero-address salt"
                     />
                     <FieldDescription>
-                      This populates the caller bytes in the CreateX salt. Leave blank for permissionless deployment salts.
+                      This populates the caller bytes in the CreateX salt. Leave blank for permissionless deployment
+                      salts.
                     </FieldDescription>
                   </Field>
                   <Field>

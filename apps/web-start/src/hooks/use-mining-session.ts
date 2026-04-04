@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-import { checkWebGpuSupport } from "saltshaker";
 import type { CheckWebGpuSupportResult, MiningSession, MiningSessionState } from "saltshaker";
+
+import { checkWebGpuSupport } from "saltshaker";
 
 export function useMiningSession() {
   const [support, setSupport] = useState<CheckWebGpuSupportResult>({

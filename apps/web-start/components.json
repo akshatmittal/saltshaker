@@ -19,8 +19,8 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "menuColor": "default",
-  "menuAccent": "bold",
+  "menuColor": "inverted",
+  "menuAccent": "subtle",
   "registries": {
     "@efferd": "https://efferd.com/r/{style}/{name}.json"
   }

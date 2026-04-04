@@ -31,7 +31,10 @@ function buildJobWords(job: PreparedJob): Uint32Array {
     words.set(packBytesToWordsLE(job.fixedSaltPrefixBytes, 6), 5);
     words.set(packBytesToWordsLE(job.callerBytes, 5), 11);
     words.set(packBytesToWordsLE(job.chainIdBytes, 8), 16);
-    words.set(packBytesToWordsLE(job.createOperation === "create2" ? job.initCodeHashBytes : job.proxyChildCodeHashBytes, 8), 24);
+    words.set(
+      packBytesToWordsLE(job.createOperation === "create2" ? job.initCodeHashBytes : job.proxyChildCodeHashBytes, 8),
+      24,
+    );
     words[32] = (job.createOperation === "create3" ? 1 : 0) | (job.guardMode << 8);
     return words;
   }

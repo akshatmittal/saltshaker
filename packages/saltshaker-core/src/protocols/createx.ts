@@ -105,53 +105,25 @@ function buildCreateXSalt(fixedSaltPrefixBytes: Uint8Array, nonce: bigint): Hex 
   return bytesToHex(saltBytes);
 }
 
-function guardCreateXSalt(
-  salt: Hex,
-  guardMode: number,
-  caller: `0x${string}` | null,
-  chainId: bigint | null,
-): Hex {
+function guardCreateXSalt(salt: Hex, guardMode: number, caller: `0x${string}` | null, chainId: bigint | null): Hex {
   if (guardMode === CREATE_X_GUARD_HASH) {
     return keccak256(salt);
   }
 
   if (guardMode === CREATE_X_GUARD_SENDER) {
     assert(caller !== null, "CreateX caller is required for caller-protected salts");
-    return keccak256(
-      encodeAbiParameters(
-        [
-          { type: "address" },
-          { type: "bytes32" },
-        ],
-        [caller, salt],
-      ),
-    );
+    return keccak256(encodeAbiParameters([{ type: "address" }, { type: "bytes32" }], [caller, salt]));
   }
 
   if (guardMode === CREATE_X_GUARD_XCHAIN) {
     assert(chainId !== null, "CreateX chain ID is required for crosschain-protected salts");
-    return keccak256(
-      encodeAbiParameters(
-        [
-          { type: "uint256" },
-          { type: "bytes32" },
-        ],
-        [chainId, salt],
-      ),
-    );
+    return keccak256(encodeAbiParameters([{ type: "uint256" }, { type: "bytes32" }], [chainId, salt]));
   }
 
   assert(caller !== null, "CreateX caller is required for caller-protected salts");
   assert(chainId !== null, "CreateX chain ID is required for crosschain-protected salts");
   return keccak256(
-    encodeAbiParameters(
-      [
-        { type: "address" },
-        { type: "uint256" },
-        { type: "bytes32" },
-      ],
-      [caller, chainId, salt],
-    ),
+    encodeAbiParameters([{ type: "address" }, { type: "uint256" }, { type: "bytes32" }], [caller, chainId, salt]),
   );
 }
 

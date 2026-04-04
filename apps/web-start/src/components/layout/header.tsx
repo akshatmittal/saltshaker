@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Gauge, Moon, Pickaxe, Satellite, Sparkles, Stone, Sun } from "lucide-react";
+import { Gauge, Moon, Pickaxe, Stone, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";

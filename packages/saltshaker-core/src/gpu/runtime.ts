@@ -2,10 +2,10 @@ import type { PreparedJob, PreparedMatcher, SessionConfig } from "../internal/ty
 import type { MiningSession, MiningSessionState } from "../types";
 
 import { DEFAULT_WORKGROUP_SIZE } from "../constants";
+import { yieldToBrowser } from "../internal/gpu-browser";
 import { deriveResult } from "../internal/jobs";
 import { mergeResult } from "../internal/matchers/results";
 import { scoreAddress } from "../internal/matchers/score";
-import { yieldToBrowser } from "../internal/gpu-browser";
 import { splitBigIntToU32, toGpuBufferSource } from "../internal/words";
 import { decodeResultWords } from "./packing";
 import {

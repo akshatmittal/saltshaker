@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { concat, encodeAbiParameters, getAddress, keccak256 } from "viem";
+import { describe, expect, it } from "vitest";
 
 import { CREATE3_PROXY_CHILD_CODE_HASH } from "../constants";
 import { addressFromHash } from "../internal/address";
@@ -22,13 +22,7 @@ describe("CreateX protocols", () => {
 
     const result = deriveCreateXResult(job, 0x0102030405060708n, 123);
     const guardedSalt = keccak256(
-      encodeAbiParameters(
-        [
-          { type: "address" },
-          { type: "bytes32" },
-        ],
-        [CALLER, result.salt],
-      ),
+      encodeAbiParameters([{ type: "address" }, { type: "bytes32" }], [CALLER, result.salt]),
     );
     const expectedAddress = getAddress(
       addressFromHash(keccak256(concat(["0xff", FACTORY, guardedSalt, INIT_CODE_HASH]))),
@@ -53,11 +47,7 @@ describe("CreateX protocols", () => {
     const result = deriveCreateXResult(job, 0x1112131415161718n, 99);
     const guardedSalt = keccak256(
       encodeAbiParameters(
-        [
-          { type: "address" },
-          { type: "uint256" },
-          { type: "bytes32" },
-        ],
+        [{ type: "address" }, { type: "uint256" }, { type: "bytes32" }],
         [CALLER, chainId, result.salt],
       ),
     );
