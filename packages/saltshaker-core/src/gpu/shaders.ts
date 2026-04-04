@@ -9,12 +9,14 @@ import patternMatcherShader from "./shaders/matchers/pattern-common.wgsl";
 import prefixMatcherShader from "./shaders/matchers/prefix.wgsl";
 import suffixMatcherShader from "./shaders/matchers/suffix.wgsl";
 import create2ProtocolShader from "./shaders/protocols/create2.wgsl";
+import createXProtocolShader from "./shaders/protocols/createx.wgsl";
 import safeProtocolShader from "./shaders/protocols/safe.wgsl";
 
-type MiningProtocol = "create2" | "safe";
+type MiningProtocol = "create2" | "safe" | "createx";
 
 const PROTOCOL_SHADERS: Record<MiningProtocol, string> = {
   create2: create2ProtocolShader,
+  createx: createXProtocolShader,
   safe: safeProtocolShader,
 };
 
@@ -43,9 +45,19 @@ const safeShaders: Record<MatcherKind, string> = {
   leadingZeros: assembleShader("safe", "leadingZeros"),
 };
 
+const createXShaders: Record<MatcherKind, string> = {
+  prefix: assembleShader("createx", "prefix"),
+  suffix: assembleShader("createx", "suffix"),
+  contains: assembleShader("createx", "contains"),
+  leadingZeros: assembleShader("createx", "leadingZeros"),
+};
+
 export function getMiningShader(protocol: MiningProtocol, matcherKind: MatcherKind): string {
   if (protocol === "create2") {
     return create2Shaders[matcherKind];
+  }
+  if (protocol === "createx") {
+    return createXShaders[matcherKind];
   }
   if (protocol === "safe") {
     return safeShaders[matcherKind];

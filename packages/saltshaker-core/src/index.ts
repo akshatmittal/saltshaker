@@ -4,6 +4,8 @@ export type {
   CheckWebGpuSupportResult,
   CreateMiningSessionInput,
   Create2JobInput,
+  CreateXJobInput,
+  CreateXOperation,
   MatcherKind,
   MiningResult,
   MiningJob,

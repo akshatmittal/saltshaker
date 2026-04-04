@@ -172,6 +172,52 @@ fn keccak256_64(input: array<u32, 16>) -> array<u32, 8> {
     return result;
 }
 
+fn keccak256_32(input: array<u32, 8>) -> array<u32, 8> {
+    var state: array<xu64, 25>;
+    for (var i = 0u; i < 25u; i++) {
+        state[i] = make_u64(0u, 0u);
+    }
+
+    for (var i = 0u; i < 4u; i++) {
+        state[i] = make_u64(input[i * 2u], input[i * 2u + 1u]);
+    }
+
+    state[4] = xor_u64(state[4], make_u64(0x01u, 0u));
+    state[16] = xor_u64(state[16], make_u64(0u, 0x80000000u));
+
+    keccakf(&state);
+
+    var result: array<u32, 8>;
+    for (var i = 0u; i < 4u; i++) {
+        result[i * 2u] = state[i].x;
+        result[i * 2u + 1u] = state[i].y;
+    }
+    return result;
+}
+
+fn keccak256_96(input: array<u32, 24>) -> array<u32, 8> {
+    var state: array<xu64, 25>;
+    for (var i = 0u; i < 25u; i++) {
+        state[i] = make_u64(0u, 0u);
+    }
+
+    for (var i = 0u; i < 12u; i++) {
+        state[i] = make_u64(input[i * 2u], input[i * 2u + 1u]);
+    }
+
+    state[12] = xor_u64(state[12], make_u64(0x01u, 0u));
+    state[16] = xor_u64(state[16], make_u64(0u, 0x80000000u));
+
+    keccakf(&state);
+
+    var result: array<u32, 8>;
+    for (var i = 0u; i < 4u; i++) {
+        result[i * 2u] = state[i].x;
+        result[i * 2u + 1u] = state[i].y;
+    }
+    return result;
+}
+
 fn keccak256_85_address(factory: array<u32, 5>, salt: array<u32, 8>, code_hash: array<u32, 8>) -> array<u32, 5> {
     var state: array<xu64, 25>;
     for (var i = 0u; i < 25u; i++) {
@@ -221,6 +267,36 @@ fn keccak256_85_address(factory: array<u32, 5>, salt: array<u32, 8>, code_hash: 
     let s10_low = (code_hash[6] >> 24u) | (code_hash[7] << 8u);
     let s10_high = (code_hash[7] >> 24u) | (0x01u << 8u);
     state[10] = make_u64(s10_low, s10_high);
+
+    state[16] = make_u64(0u, 0x80000000u);
+    keccakf(&state);
+
+    var result: array<u32, 5>;
+    result[0] = state[1].y;
+    result[1] = state[2].x;
+    result[2] = state[2].y;
+    result[3] = state[3].x;
+    result[4] = state[3].y;
+    return result;
+}
+
+fn keccak256_23_address(deployer: array<u32, 5>) -> array<u32, 5> {
+    var state: array<xu64, 25>;
+    for (var i = 0u; i < 25u; i++) {
+        state[i] = make_u64(0u, 0u);
+    }
+
+    let s0_low = 0x94d6u | ((deployer[0] & 0x0000ffffu) << 16u);
+    let s0_high = (deployer[0] >> 16u) | ((deployer[1] & 0x0000ffffu) << 16u);
+    state[0] = make_u64(s0_low, s0_high);
+
+    let s1_low = (deployer[1] >> 16u) | ((deployer[2] & 0x0000ffffu) << 16u);
+    let s1_high = (deployer[2] >> 16u) | ((deployer[3] & 0x0000ffffu) << 16u);
+    state[1] = make_u64(s1_low, s1_high);
+
+    let s2_low = (deployer[3] >> 16u) | ((deployer[4] & 0x0000ffffu) << 16u);
+    let s2_high = (deployer[4] >> 16u) | 0x01010000u;
+    state[2] = make_u64(s2_low, s2_high);
 
     state[16] = make_u64(0u, 0x80000000u);
     keccakf(&state);

@@ -1,6 +1,8 @@
 import type { Address, Hex } from "viem";
 
-export type JobProtocol = "create2" | "safe";
+export type JobProtocol = "create2" | "safe" | "createx";
+
+export type CreateXOperation = "create2" | "create3";
 
 export type MatcherKind = "prefix" | "suffix" | "contains" | "leadingZeros";
 
@@ -50,7 +52,19 @@ export interface SafeJobInput {
   startNonce?: bigint;
 }
 
-export type MiningJob = Create2JobInput | SafeJobInput;
+export interface CreateXJobInput {
+  protocol: "createx";
+  createOperation: CreateXOperation;
+  factory: Address;
+  fixedSaltPrefix: Hex;
+  caller?: Address;
+  chainId?: bigint;
+  initCode?: Hex;
+  initCodeHash?: Hex;
+  startNonce?: bigint;
+}
+
+export type MiningJob = Create2JobInput | SafeJobInput | CreateXJobInput;
 
 export interface MiningResult {
   nonce: bigint;

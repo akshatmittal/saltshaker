@@ -1,5 +1,8 @@
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
 
+export const CREATE3_PROXY_CHILD_CODE_HASH =
+  "0x21c35dbe1b344a2488cf3321d6ce542f8e9f305544ff09e4993a62319a497c1f" as const;
+
 export const SAFE_SETUP_ABI = [
   {
     inputs: [

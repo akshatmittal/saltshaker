@@ -35,7 +35,7 @@ export async function initializeGpuResources(
     throw new Error("WebGPU is not available in this browser");
   }
 
-  await reportStatus(options, "Requesting GPU adapter");
+  await reportStatus(options, "Requesting GPU Adapter");
   const adapter = await navigator.gpu.requestAdapter({
     powerPreference: config.powerPreference ?? "high-performance",
   });
@@ -44,21 +44,21 @@ export async function initializeGpuResources(
     throw new Error("No WebGPU adapter was found");
   }
 
-  await reportStatus(options, "Requesting GPU device");
+  await reportStatus(options, "Requesting GPU Device");
   const device = await adapter.requestDevice();
 
-  await reportStatus(options, "Preparing shader module");
+  await reportStatus(options, "Preparing Compute Shader");
   const module = device.createShaderModule({
     code: getMiningShader(job.protocol, matcher.type),
   });
 
-  await reportStatus(options, "Compiling compute pipeline");
+  await reportStatus(options, "Compiling Compute Shader");
   const pipeline = await device.createComputePipelineAsync({
     layout: "auto",
     compute: { module, entryPoint: "main" },
   });
 
-  await reportStatus(options, "Allocating GPU buffers");
+  await reportStatus(options, "Allocating GPU Buffers");
   const constantsData = buildConstantsWords(job, matcher);
 
   const constantsBuffer = device.createBuffer({

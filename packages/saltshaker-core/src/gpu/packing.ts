@@ -25,6 +25,17 @@ function buildJobWords(job: PreparedJob): Uint32Array {
     return words;
   }
 
+  if (job.protocol === "createx") {
+    const words = new Uint32Array(33);
+    words.set(packBytesToWordsLE(job.factoryBytes, 5), 0);
+    words.set(packBytesToWordsLE(job.fixedSaltPrefixBytes, 6), 5);
+    words.set(packBytesToWordsLE(job.callerBytes, 5), 11);
+    words.set(packBytesToWordsLE(job.chainIdBytes, 8), 16);
+    words.set(packBytesToWordsLE(job.createOperation === "create2" ? job.initCodeHashBytes : job.proxyChildCodeHashBytes, 8), 24);
+    words[32] = (job.createOperation === "create3" ? 1 : 0) | (job.guardMode << 8);
+    return words;
+  }
+
   const words = new Uint32Array(21);
   words.set(packBytesToWordsLE(job.initializerHashBytes, 8), 0);
   words.set(packBytesToWordsLE(job.factoryBytes, 5), 8);

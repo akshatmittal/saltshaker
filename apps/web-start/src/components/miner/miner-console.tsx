@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from "react";
 
 import { AlignLeft, AlignRight, ChevronDown, ChevronUp, Copy, Hash, Search, Settings } from "lucide-react";
-import { createMiningSession, type AddressMatcherSpec, type MatcherKind, type MiningJob } from "saltshaker";
+import {
+  createMiningSession,
+  type AddressMatcherSpec,
+  type CreateXOperation,
+  type MatcherKind,
+  type MiningJob,
+} from "saltshaker";
 import { toHex, type Hex } from "viem";
 
-import { WorkbenchLayout } from "@/components/miner/workbench-layout";
 import { EmptyState, TelemetryCard } from "@/components/miner/shared";
+import { WorkbenchLayout } from "@/components/miner/workbench-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -18,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,7 +32,7 @@ import { useMiningSession } from "@/hooks/use-mining-session";
 import { STANDARDIZED_CREATE2_BENCHMARK_PRESET } from "@/lib/standardized-create2-benchmark-preset";
 import { cn } from "@/lib/utils";
 
-type Protocol = "create2" | "safe";
+type Protocol = MiningJob["protocol"];
 
 const MATCHER_OPTIONS: { type: MatcherKind; icon: React.ElementType; label: string }[] = [
   { type: "leadingZeros", icon: Hash, label: "Leading Zeros" },
@@ -35,6 +42,7 @@ const MATCHER_OPTIONS: { type: MatcherKind; icon: React.ElementType; label: stri
 ];
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
+const DEFAULT_CREATEX_FACTORY = "0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed" as const;
 const DEFAULT_SAFE_FACTORY = "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2" as const;
 const DEFAULT_SAFE_FALLBACK_HANDLER = "0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4" as const;
 const DEFAULT_SAFE_PROXY_CREATION_CODE_HASH =
@@ -60,6 +68,15 @@ type SafeFormState = {
   proxyCreationCodeHash: string;
 };
 
+type CreateXFormState = {
+  createOperation: CreateXOperation;
+  factory: string;
+  caller: string;
+  crosschainReplayProtection: boolean;
+  chainId: string;
+  initCodeHash: string;
+};
+
 const defaultCreate2: Create2FormState = {
   deployer: STANDARDIZED_CREATE2_BENCHMARK_PRESET.job.deployer,
   fixedSaltPrefix: "",
@@ -77,6 +94,15 @@ const defaultSafe: SafeFormState = {
   paymentReceiver: "",
   factory: DEFAULT_SAFE_FACTORY,
   proxyCreationCodeHash: DEFAULT_SAFE_PROXY_CREATION_CODE_HASH,
+};
+
+const defaultCreateX: CreateXFormState = {
+  createOperation: "create2",
+  factory: DEFAULT_CREATEX_FACTORY,
+  caller: "",
+  crosschainReplayProtection: false,
+  chainId: "",
+  initCodeHash: STANDARDIZED_CREATE2_BENCHMARK_PRESET.job.initCodeHash,
 };
 
 type MatcherFormState = {
@@ -105,6 +131,7 @@ export function MinerConsole() {
   const [protocol, setProtocol] = useState<Protocol>("create2");
   const [create2Form, setCreate2Form] = useState(defaultCreate2);
   const [safeForm, setSafeForm] = useState(defaultSafe);
+  const [createXForm, setCreateXForm] = useState(defaultCreateX);
   const [matcher, setMatcher] = useState(defaultMatcher);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [maxResults, setMaxResults] = useState(10);
@@ -129,6 +156,10 @@ export function MinerConsole() {
     setSafeForm((current) => ({ ...current, [key]: value }));
   }
 
+  function updateCreateX<K extends keyof CreateXFormState>(key: K, value: CreateXFormState[K]) {
+    setCreateXForm((current) => ({ ...current, [key]: value }));
+  }
+
   function updateMatcher<K extends keyof MatcherFormState>(key: K, value: MatcherFormState[K]) {
     setMatcher((current) => ({ ...current, [key]: value }));
   }
@@ -139,8 +170,20 @@ export function MinerConsole() {
     return (trimmed.startsWith("0x") ? trimmed : `0x${trimmed}`) as `0x${string}`;
   }
 
-  function buildCreate2FixedSaltPrefix(): `0x${string}` {
-    const normalized = normalizeHexInput(create2Form.fixedSaltPrefix) ?? "0x";
+  function normalizeAddressInput(value: string): `0x${string}` | undefined {
+    const trimmed = value.trim();
+    if (trimmed === "") return undefined;
+    return trimmed as `0x${string}`;
+  }
+
+  function normalizeBigIntInput(value: string): bigint | undefined {
+    const trimmed = value.trim();
+    if (trimmed === "") return undefined;
+    return BigInt(trimmed);
+  }
+
+  function buildFixedSaltPrefix(value: string): `0x${string}` {
+    const normalized = normalizeHexInput(value) ?? "0x";
     const raw = normalized.slice(2);
 
     if (!/^[0-9a-fA-F]*$/.test(raw)) {
@@ -159,6 +202,12 @@ export function MinerConsole() {
     const randomBytes = new Uint8Array(CREATE2_FIXED_SALT_PREFIX_BYTES - providedBytes);
 
     return `0x${raw}${toHex(crypto.getRandomValues(randomBytes)).slice(2)}` as Hex;
+  }
+
+  function buildCreateXFixedSaltPrefix(): `0x${string}` {
+    const caller = normalizeAddressInput(createXForm.caller) ?? ZERO_ADDRESS;
+    const replayProtectionFlag = createXForm.crosschainReplayProtection ? "01" : "00";
+    return buildFixedSaltPrefix(`0x${caller.slice(2)}${replayProtectionFlag}`);
   }
 
   function buildMatcher(): AddressMatcherSpec {
@@ -180,8 +229,21 @@ export function MinerConsole() {
       return {
         protocol: "create2",
         deployer: create2Form.deployer as `0x${string}`,
-        fixedSaltPrefix: buildCreate2FixedSaltPrefix(),
+        fixedSaltPrefix: buildFixedSaltPrefix(create2Form.fixedSaltPrefix),
         initCodeHash: normalizeHexInput(create2Form.initCodeHash),
+      };
+    }
+
+    if (protocol === "createx") {
+      return {
+        protocol: "createx",
+        createOperation: createXForm.createOperation,
+        factory: createXForm.factory.trim() === "" ? DEFAULT_CREATEX_FACTORY : (createXForm.factory as `0x${string}`),
+        fixedSaltPrefix: buildCreateXFixedSaltPrefix(),
+        caller: normalizeAddressInput(createXForm.caller),
+        chainId: createXForm.crosschainReplayProtection ? normalizeBigIntInput(createXForm.chainId) : undefined,
+        initCodeHash:
+          createXForm.createOperation === "create2" ? normalizeHexInput(createXForm.initCodeHash) : undefined,
       };
     }
 
@@ -223,10 +285,10 @@ export function MinerConsole() {
       const session = createMiningSession({ job: buildJob(), matcher: buildMatcher(), maxResults });
       setActiveSession(session);
       subscribeToSession(session);
-      void session.start().catch((startError) => {
+      void session.start().catch((startError: unknown) => {
         setError(startError instanceof Error ? startError.message : "Failed to start mining");
       });
-    } catch (startError) {
+    } catch (startError: unknown) {
       setError(startError instanceof Error ? startError.message : "Failed to start mining");
     }
   }
@@ -237,6 +299,19 @@ export function MinerConsole() {
 
   const topResults = sessionState?.results ?? [];
 
+  function protocolLabel(value: Protocol): string {
+    switch (value) {
+      case "create2":
+        return "CREATE2";
+      case "createx":
+        return "CreateX";
+      case "safe":
+        return "Safe";
+    }
+
+    return value;
+  }
+
   return (
     <WorkbenchLayout
       sidebar={
@@ -246,8 +321,8 @@ export function MinerConsole() {
               <CardTitle>Protocol</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-1 rounded-xl border bg-muted p-1">
-                {(["create2", "safe"] as Protocol[]).map((p) => (
+              <div className="grid grid-cols-3 gap-1 rounded-xl border bg-muted p-1">
+                {(["create2", "createx", "safe"] as Protocol[]).map((p) => (
                   <button
                     key={p}
                     type="button"
@@ -259,7 +334,7 @@ export function MinerConsole() {
                     )}
                     onClick={() => setProtocol(p)}
                   >
-                    {p === "create2" ? "CREATE2" : "Safe"}
+                    {protocolLabel(p)}
                   </button>
                 ))}
               </div>
@@ -275,6 +350,14 @@ export function MinerConsole() {
                     />
                   </Field>
                   <Field>
+                    <FieldLabel>Init Code Hash</FieldLabel>
+                    <Input
+                      value={create2Form.initCodeHash}
+                      onChange={(event) => updateCreate2("initCodeHash", event.target.value)}
+                      className="font-mono"
+                    />
+                  </Field>
+                  <Field>
                     <FieldLabel>Salt Prefix</FieldLabel>
                     <Input
                       value={create2Form.fixedSaltPrefix}
@@ -283,14 +366,77 @@ export function MinerConsole() {
                       placeholder="Optional hex prefix"
                     />
                   </Field>
+                </div>
+              ) : protocol === "createx" ? (
+                <div className="grid gap-4">
                   <Field>
-                    <FieldLabel>Init Code Hash</FieldLabel>
+                    <FieldLabel>CreateX Mode</FieldLabel>
+                    <NativeSelect
+                      value={createXForm.createOperation}
+                      onChange={(event) => updateCreateX("createOperation", event.target.value as CreateXOperation)}
+                      className="w-full"
+                    >
+                      <NativeSelectOption value="create2">CREATE2</NativeSelectOption>
+                      <NativeSelectOption value="create3">CREATE3</NativeSelectOption>
+                    </NativeSelect>
+                  </Field>
+                  <Field>
+                    <FieldLabel>Factory</FieldLabel>
                     <Input
-                      value={create2Form.initCodeHash}
-                      onChange={(event) => updateCreate2("initCodeHash", event.target.value)}
+                      value={createXForm.factory}
+                      onChange={(event) => updateCreateX("factory", event.target.value)}
                       className="font-mono"
                     />
                   </Field>
+                  {createXForm.createOperation === "create2" ? (
+                    <Field>
+                      <FieldLabel>Init Code Hash</FieldLabel>
+                      <Input
+                        value={createXForm.initCodeHash}
+                        onChange={(event) => updateCreateX("initCodeHash", event.target.value)}
+                        className="font-mono"
+                      />
+                    </Field>
+                  ) : null}
+                  <Field>
+                    <FieldLabel>Caller</FieldLabel>
+                    <Input
+                      value={createXForm.caller}
+                      onChange={(event) => updateCreateX("caller", event.target.value)}
+                      className="font-mono"
+                      placeholder="Leave blank for zero-address salt"
+                    />
+                    <FieldDescription>
+                      This populates the caller bytes in the CreateX salt. Leave blank for permissionless deployment salts.
+                    </FieldDescription>
+                  </Field>
+                  <Field>
+                    <FieldLabel>Cross-Chain Replay Protection</FieldLabel>
+                    <NativeSelect
+                      value={createXForm.crosschainReplayProtection ? "enabled" : "disabled"}
+                      onChange={(event) =>
+                        updateCreateX("crosschainReplayProtection", event.target.value === "enabled")
+                      }
+                      className="w-full"
+                    >
+                      <NativeSelectOption value="disabled">Disabled</NativeSelectOption>
+                      <NativeSelectOption value="enabled">Enabled</NativeSelectOption>
+                    </NativeSelect>
+                    <FieldDescription>
+                      When enabled, CreateX guards the salt with the chain ID before address derivation.
+                    </FieldDescription>
+                  </Field>
+                  {createXForm.crosschainReplayProtection ? (
+                    <Field>
+                      <FieldLabel>Chain ID</FieldLabel>
+                      <Input
+                        value={createXForm.chainId}
+                        onChange={(event) => updateCreateX("chainId", event.target.value)}
+                        className="font-mono"
+                        placeholder="Required when replay protection is enabled"
+                      />
+                    </Field>
+                  ) : null}
                 </div>
               ) : (
                 <div className="grid gap-4">
@@ -474,9 +620,7 @@ export function MinerConsole() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Results Settings</DialogTitle>
-                  <DialogDescription>
-                    Configure how results are collected during the mining session.
-                  </DialogDescription>
+                  <DialogDescription>Configure how results are collected during the mining session.</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-5">
                   <Field>
@@ -530,9 +674,7 @@ export function MinerConsole() {
                         />
                       </div>
                     </button>
-                    <FieldDescription>
-                      Automatically stop mining as soon as one valid result is found.
-                    </FieldDescription>
+                    <FieldDescription>Automatically stop mining as soon as one valid result is found.</FieldDescription>
                   </Field>
                 </div>
               </DialogContent>
@@ -552,7 +694,7 @@ export function MinerConsole() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {topResults.map((result, index) => (
+                {topResults.map((result: (typeof topResults)[number], index: number) => (
                   <TableRow key={`${result.address}-${result.nonce.toString()}`}>
                     <TableCell className="text-xs text-muted-foreground">{index + 1}</TableCell>
                     <TableCell className="font-medium">{result.score}</TableCell>

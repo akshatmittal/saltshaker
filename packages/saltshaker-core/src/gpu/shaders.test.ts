@@ -9,6 +9,10 @@ describe("getMiningShader", () => {
       ["create2", "suffix"],
       ["create2", "contains"],
       ["create2", "leadingZeros"],
+      ["createx", "prefix"],
+      ["createx", "suffix"],
+      ["createx", "contains"],
+      ["createx", "leadingZeros"],
       ["safe", "prefix"],
       ["safe", "suffix"],
       ["safe", "contains"],
@@ -24,11 +28,16 @@ describe("getMiningShader", () => {
 
   it("keeps protocol-specific address derivation isolated from the shared kernel", () => {
     const create2 = getMiningShader("create2", "prefix");
+    const createX = getMiningShader("createx", "prefix");
     const safe = getMiningShader("safe", "prefix");
 
     expect(create2).toContain("struct ProtocolData");
     expect(create2).toContain("salt_prefix");
     expect(create2).toContain("fn protocol_address");
+    expect(createX).toContain("guard_mode");
+    expect(createX).toContain("createx_operation");
+    expect(createX).toContain("fn createx_guarded_salt");
+    expect(createX).toContain("keccak256_23_address");
     expect(safe).toContain("initializer_hash");
     expect(safe).toContain("proxy_code_hash");
     expect(safe).toContain("keccak256_64");
@@ -36,12 +45,15 @@ describe("getMiningShader", () => {
 
   it("uses one shared compute kernel for all variants", () => {
     const create2 = getMiningShader("create2", "prefix");
+    const createX = getMiningShader("createx", "contains");
     const safe = getMiningShader("safe", "leadingZeros");
 
     expect(create2.match(/@compute/g)).toHaveLength(1);
     expect(create2.match(/fn main/g)).toHaveLength(1);
     expect(create2).toContain("constants.protocol");
     expect(create2).toContain("constants.matcher");
+    expect(createX).toContain("constants.protocol");
+    expect(createX).toContain("constants.matcher");
     expect(safe).toContain("constants.protocol");
     expect(safe).toContain("constants.matcher");
   });

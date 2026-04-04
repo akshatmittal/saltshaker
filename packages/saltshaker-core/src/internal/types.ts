@@ -1,6 +1,6 @@
 import type { Address, Hex } from "viem";
 
-import type { JobProtocol, MatcherKind } from "../types";
+import type { CreateXOperation, JobProtocol, MatcherKind } from "../types";
 
 type PatternMatcherKind = Exclude<MatcherKind, "leadingZeros">;
 
@@ -41,7 +41,24 @@ export interface PreparedSafeJob extends PreparedJobBase {
   proxyCreationCodeHashBytes: Uint8Array;
 }
 
-export type PreparedJob = PreparedCreate2Job | PreparedSafeJob;
+export interface PreparedCreateXJob extends PreparedJobBase {
+  protocol: "createx";
+  createOperation: CreateXOperation;
+  factory: Address;
+  factoryBytes: Uint8Array;
+  fixedSaltPrefixBytes: Uint8Array;
+  caller: Address | null;
+  callerBytes: Uint8Array;
+  chainId: bigint | null;
+  chainIdBytes: Uint8Array;
+  guardMode: number;
+  initCodeHash: Hex;
+  initCodeHashBytes: Uint8Array;
+  proxyChildCodeHash: Hex;
+  proxyChildCodeHashBytes: Uint8Array;
+}
+
+export type PreparedJob = PreparedCreate2Job | PreparedSafeJob | PreparedCreateXJob;
 
 export interface SessionConfig {
   dispatchX: number;
