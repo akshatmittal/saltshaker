@@ -1,5 +1,6 @@
 import type { MiningJob, MiningResult } from "../types";
 import type { PreparedJob } from "./types";
+
 import { deriveCreate2Result, prepareCreate2Job } from "../protocols/create2";
 import { deriveSafeResult, prepareSafeJob } from "../protocols/safe";
 

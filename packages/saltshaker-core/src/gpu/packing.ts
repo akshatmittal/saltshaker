@@ -1,4 +1,5 @@
 import type { PreparedJob, PreparedMatcher } from "../internal/types";
+
 import { packBytesToWordsLE } from "../internal/words";
 
 const RESULT_WORDS = 8;

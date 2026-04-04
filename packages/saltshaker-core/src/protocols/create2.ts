@@ -1,8 +1,9 @@
 import { concat, getAddress, keccak256 } from "viem";
 
-import { FIXED_SALT_PREFIX_BYTES } from "../constants";
-import type { Create2JobInput, MiningResult } from "../types";
 import type { PreparedCreate2Job } from "../internal/types";
+import type { Create2JobInput, MiningResult } from "../types";
+
+import { FIXED_SALT_PREFIX_BYTES } from "../constants";
 import { addressFromHash, countLeadingZeroNibbles, ensureAddress } from "../internal/address";
 import { assert } from "../internal/assert";
 import { bytesToHex, hexToBytes, normalizeHex } from "../internal/hex";

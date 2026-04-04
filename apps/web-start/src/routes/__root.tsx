@@ -1,10 +1,11 @@
+import type { PropsWithChildren } from "react";
+
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 
 import { Header } from "@/components/layout/header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import type { PropsWithChildren } from "react";
 
 import appCss from "../styles.css?url";
 

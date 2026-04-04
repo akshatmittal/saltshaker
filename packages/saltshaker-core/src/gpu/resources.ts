@@ -1,4 +1,5 @@
 import type { PreparedJob, PreparedMatcher, SessionConfig } from "../internal/types";
+
 import { toGpuBufferSource } from "../internal/words";
 import { buildConstantsWords, createEmptyResultWords, RESULT_BUFFER_SIZE } from "./packing";
 import { getMiningShader } from "./shaders";

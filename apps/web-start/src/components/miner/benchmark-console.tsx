@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+
 import {
   checkWebGpuSupport,
   createMiningSession,
@@ -10,11 +11,11 @@ import {
   type MiningSessionState,
 } from "saltshaker";
 
+import { ReadOnlyField, TelemetryCard } from "@/components/miner/shared";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { ReadOnlyField, TelemetryCard } from "@/components/miner/shared";
 
 export function BenchmarkConsole() {
   const [support, setSupport] = useState<CheckWebGpuSupportResult>({

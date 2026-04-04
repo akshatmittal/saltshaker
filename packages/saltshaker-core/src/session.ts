@@ -1,9 +1,10 @@
+import type { SessionConfig } from "./internal/types";
+import type { AddressMatcherSpec, CheckWebGpuSupportResult, CreateMiningSessionInput, MiningSession } from "./types";
+
 import { DEFAULT_DISPATCH_X, DEFAULT_DISPATCH_Y, MAX_RESULTS } from "./constants";
+import { createGpuMiningSession } from "./gpu/runtime";
 import { prepareJob } from "./internal/jobs";
 import { prepareMatcher } from "./internal/matchers/prepare";
-import type { SessionConfig } from "./internal/types";
-import { createGpuMiningSession } from "./gpu/runtime";
-import type { AddressMatcherSpec, CheckWebGpuSupportResult, CreateMiningSessionInput, MiningSession } from "./types";
 
 const DEFAULT_MATCHER_SPEC: AddressMatcherSpec = { type: "leadingZeros", value: 8 };
 

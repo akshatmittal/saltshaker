@@ -1,5 +1,6 @@
 import type { AddressMatcherSpec } from "../../types";
 import type { PreparedMatcher } from "../types";
+
 import { assert } from "../assert";
 import { hexToNibbles, normalizeNibbleHex } from "../hex";
 

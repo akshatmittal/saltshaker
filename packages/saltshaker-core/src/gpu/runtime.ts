@@ -1,10 +1,11 @@
+import type { PreparedJob, PreparedMatcher, SessionConfig } from "../internal/types";
+import type { MiningSession, MiningSessionState } from "../types";
+
 import { DEFAULT_WORKGROUP_SIZE } from "../constants";
 import { deriveResult } from "../internal/jobs";
 import { mergeResult } from "../internal/matchers/results";
 import { scoreAddress } from "../internal/matchers/score";
-import type { PreparedJob, PreparedMatcher, SessionConfig } from "../internal/types";
 import { splitBigIntToU32, toGpuBufferSource } from "../internal/words";
-import type { MiningSession, MiningSessionState } from "../types";
 import { decodeResultWords } from "./packing";
 import {
   destroyGpuResources,

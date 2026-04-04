@@ -4,8 +4,8 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Gauge, Moon, Satellite, Sparkles, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
-import { useScroll } from "@/hooks/use-scroll";
 import { Button } from "@/components/ui/button";
+import { useScroll } from "@/hooks/use-scroll";
 import { cn } from "@/lib/utils";
 
 const navItems = [

@@ -1,6 +1,7 @@
 import type { Address } from "viem";
 
 import type { PreparedMatcher } from "../types";
+
 import { countLeadingZeroNibbles } from "../address";
 
 function scorePrefix(addressHex: string, valueHex: string): number {

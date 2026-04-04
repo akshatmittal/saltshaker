@@ -1,8 +1,9 @@
 import { concat, encodeFunctionData, getAddress, keccak256, pad, toHex, type Hex } from "viem";
 
-import { SAFE_SETUP_ABI } from "../constants";
-import type { MiningResult, SafeJobInput } from "../types";
 import type { PreparedSafeJob } from "../internal/types";
+import type { MiningResult, SafeJobInput } from "../types";
+
+import { SAFE_SETUP_ABI } from "../constants";
 import { addressFromHash, countLeadingZeroNibbles, ensureAddress } from "../internal/address";
 import { assert } from "../internal/assert";
 import { hexToBytes, normalizeHex } from "../internal/hex";

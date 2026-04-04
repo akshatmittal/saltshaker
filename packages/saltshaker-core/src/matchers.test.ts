@@ -1,10 +1,11 @@
 import { getAddress } from "viem";
 import { describe, expect, it } from "vitest";
 
-import { mergeResult } from "./internal/matchers/results";
-import { prepareMatcher } from "./internal/matchers/prepare";
-import { scoreAddress } from "./internal/matchers/score";
 import type { MiningResult } from "./types";
+
+import { prepareMatcher } from "./internal/matchers/prepare";
+import { mergeResult } from "./internal/matchers/results";
+import { scoreAddress } from "./internal/matchers/score";
 
 const PATTERN_ADDRESS = getAddress("0x0123456789abcdef0123456789abcdef01234567");
 const ZERO_HEAVY_ADDRESS = getAddress("0x000f123456789abcdef0123456789abcdef01234");

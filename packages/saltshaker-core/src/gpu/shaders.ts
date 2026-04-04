@@ -1,4 +1,5 @@
 import "../wgsl.d.ts";
+import type { MatcherKind } from "../types";
 
 import coreShader from "./shaders/common/core.wgsl";
 import kernelShader from "./shaders/common/kernel.wgsl";
@@ -9,8 +10,6 @@ import prefixMatcherShader from "./shaders/matchers/prefix.wgsl";
 import suffixMatcherShader from "./shaders/matchers/suffix.wgsl";
 import create2ProtocolShader from "./shaders/protocols/create2.wgsl";
 import safeProtocolShader from "./shaders/protocols/safe.wgsl";
-
-import type { MatcherKind } from "../types";
 
 type MiningProtocol = "create2" | "safe";
 

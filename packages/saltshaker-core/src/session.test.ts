@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import type { MiningSessionState } from "./types";
+
 import { STANDARDIZED_CREATE2_BENCHMARK_PRESET } from "./constants";
 import { createMiningSession } from "./session";
-import type { MiningSessionState } from "./types";
 
 const navigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, "navigator");
 
