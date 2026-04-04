@@ -10,7 +10,6 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf .output .tanstack dist"
   },
@@ -42,10 +41,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "^6.0.1",
     "@webgpu/types": "catalog:",
-    "@workspace/eslint-config": "workspace:^",
     "@workspace/typescript-config": "workspace:*",
-    "eslint": "catalog:",
-    "prettier": "^3.8.1",
     "typescript": "catalog:",
     "vite": "^8.0.3"
   }

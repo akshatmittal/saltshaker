@@ -8,16 +8,17 @@
     "build:lib": "turbo build --filter='!@workspace/*'",
     "dev": "turbo dev",
     "dev:lib": "turbo dev --filter='!@workspace/*'",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,mjs,md,json,css}\" && turbo format",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
     "typecheck": "turbo typecheck",
     "clean": "turbo clean"
   },
   "devDependencies": {
-    "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
-    "prettier": "^3.8.1",
-    "prettier-plugin-tailwindcss": "^0.7.2",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
     "turbo": "^2.9.3",
     "typescript": "catalog:"
   },

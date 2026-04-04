@@ -14,5 +14,6 @@
   ],
   "settings": {
     "js/ts.tsdk.path": "workspace-root/node_modules/typescript/lib",
+    "editor.defaultFormatter": "oxc.oxc-vscode",
   },
 }

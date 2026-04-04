@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "unicorn", "oxc", "react"],
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.next/**",
+    "**/.turbo/**",
+    "**/coverage/**",
+    "**/.pnpm-store/**",
+    "**/.output/**",
+    "**/.tanstack/**",
+    "**/routeTree.gen.ts",
+    "pnpm-lock.yaml"
+  ],
+  "rules": {
+    "react/react-in-jsx-scope": "off"
+  }
+}

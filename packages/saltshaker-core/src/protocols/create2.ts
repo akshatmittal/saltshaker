@@ -1,4 +1,4 @@
-import { concat, getAddress, keccak256, type Address, type Hex } from "viem";
+import { concat, getAddress, keccak256 } from "viem";
 
 import { FIXED_SALT_PREFIX_BYTES } from "../constants";
 import type { Create2JobInput, MiningResult } from "../types";

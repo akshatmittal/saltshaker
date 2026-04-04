@@ -1,4 +1,4 @@
-/// <reference path="../wgsl.d.ts" />
+import "../wgsl.d.ts";
 
 import coreShader from "./shaders/common/core.wgsl";
 import kernelShader from "./shaders/common/kernel.wgsl";

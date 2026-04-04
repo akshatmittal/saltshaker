@@ -8,13 +8,6 @@
       "outputs": [".next/**", "!.next/cache/**", ".output/**", ".tanstack/**", "dist/**"],
       "dependsOn": ["^build"]
     },
-    "lint": {
-      "dependsOn": ["^lint"]
-    },
-    "format": {
-      "dependsOn": ["^format"],
-      "cache": false
-    },
     "typecheck": {
       "dependsOn": ["^typecheck"]
     },

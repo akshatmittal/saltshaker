@@ -37,6 +37,6 @@
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "viem": "catalog:",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.2"
   }
 }
