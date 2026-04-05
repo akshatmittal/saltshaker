@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from "react";
 
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
+import { TriangleAlert } from "lucide-react";
 
 import { Header } from "@/components/layout/header";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -52,8 +53,11 @@ function RootDocument({ children }: PropsWithChildren) {
           <TooltipProvider>
             <div className="min-h-svh bg-background">
               <Header />
-              <main className="flex min-h-svh flex-col pt-16">
-                <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4">{children}</div>
+              <main className="flex min-h-svh flex-col pt-26 sm:pt-16">
+                <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-3 pb-4 sm:px-4 sm:pb-6">
+                  <MobileDesktopNotice />
+                  {children}
+                </div>
               </main>
               <Toaster />
             </div>
@@ -62,5 +66,19 @@ function RootDocument({ children }: PropsWithChildren) {
         <Scripts />
       </body>
     </html>
+  );
+}
+
+function MobileDesktopNotice() {
+  return (
+    <div className="sm:hidden">
+      <div className="mt-3 flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-950 dark:text-amber-100">
+        <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+        <p>
+          Saltshaker works on mobile for quick checks, but it is designed for desktop use. For the best experience, use
+          a desktop browser.
+        </p>
+      </div>
+    </div>
   );
 }

@@ -1,13 +1,18 @@
 import { useState } from "react";
 
+import { ChevronDown } from "lucide-react";
+
 import { ReadOnlyField, TelemetryCard } from "@/components/miner/shared";
 import { WorkbenchLayout } from "@/components/miner/workbench-layout";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useBenchmarkRuns } from "@/hooks/use-benchmark-runs";
 import { useMiningSession } from "@/hooks/use-mining-session";
 import { STANDARDIZED_CREATE2_BENCHMARK_PRESET } from "@/lib/standardized-create2-benchmark-preset";
+import { cn } from "@/lib/utils";
 
 export function BenchmarkConsole() {
   const mining = useMiningSession();
@@ -15,6 +20,7 @@ export function BenchmarkConsole() {
 
   const [durationSeconds, setDurationSeconds] = useState("10");
   const [runsInput, setRunsInput] = useState("3");
+  const [presetOpen, setPresetOpen] = useState(false);
 
   const { runProgress, handleRun, handleStop } = useBenchmarkRuns(
     {
@@ -38,7 +44,7 @@ export function BenchmarkConsole() {
               <CardTitle>Benchmark Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field>
                   <FieldLabel>Duration (s)</FieldLabel>
                   <Input
@@ -67,27 +73,46 @@ export function BenchmarkConsole() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader>
-              <CardTitle>Benchmark Preset</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              <ReadOnlyField
-                label="Deployer"
-                value={STANDARDIZED_CREATE2_BENCHMARK_PRESET.job.deployer}
-              />
-              <ReadOnlyField
-                label="Fixed Salt Prefix"
-                value={STANDARDIZED_CREATE2_BENCHMARK_PRESET.job.fixedSaltPrefix}
-              />
-              <ReadOnlyField
-                label="Init Code Hash"
-                value={STANDARDIZED_CREATE2_BENCHMARK_PRESET.job.initCodeHash}
-              />
-              <ReadOnlyField
-                label="Matcher"
-                value="Leading zeros = 40"
-              />
-            </CardContent>
+            <Collapsible
+              open={presetOpen}
+              onOpenChange={setPresetOpen}
+            >
+              <CardHeader>
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle>Benchmark Preset</CardTitle>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5 px-2 text-muted-foreground"
+                    >
+                      <span>{presetOpen ? "Hide" : "Show"}</span>
+                      <ChevronDown className={cn("size-4 transition-transform", presetOpen && "rotate-180")} />
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+              </CardHeader>
+              <CollapsibleContent>
+                <CardContent className="grid gap-4">
+                  <ReadOnlyField
+                    label="Deployer"
+                    value={STANDARDIZED_CREATE2_BENCHMARK_PRESET.job.deployer}
+                  />
+                  <ReadOnlyField
+                    label="Fixed Salt Prefix"
+                    value={STANDARDIZED_CREATE2_BENCHMARK_PRESET.job.fixedSaltPrefix}
+                  />
+                  <ReadOnlyField
+                    label="Init Code Hash"
+                    value={STANDARDIZED_CREATE2_BENCHMARK_PRESET.job.initCodeHash}
+                  />
+                  <ReadOnlyField
+                    label="Matcher"
+                    value="Leading zeros = 40"
+                  />
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
           </Card>
         </>
       }

@@ -58,12 +58,7 @@ type Create2FormState = {
 type SafeFormState = {
   owners: string;
   threshold: string;
-  to: string;
-  data: string;
   fallbackHandler: string;
-  paymentToken: string;
-  payment: string;
-  paymentReceiver: string;
   factory: string;
   proxyCreationCodeHash: string;
 };
@@ -86,12 +81,7 @@ const defaultCreate2: Create2FormState = {
 const defaultSafe: SafeFormState = {
   owners: ["0x0000000000000000000000000000000000000001", "0x0000000000000000000000000000000000000002"].join("\n"),
   threshold: "2",
-  to: "",
-  data: "0x",
   fallbackHandler: DEFAULT_SAFE_FALLBACK_HANDLER,
-  paymentToken: "",
-  payment: "0",
-  paymentReceiver: "",
   factory: DEFAULT_SAFE_FACTORY,
   proxyCreationCodeHash: DEFAULT_SAFE_PROXY_CREATION_CODE_HASH,
 };
@@ -256,16 +246,15 @@ export function MinerConsole() {
       protocol: "safe",
       owners,
       threshold: BigInt(safeForm.threshold || "1"),
-      to: safeForm.to.trim() === "" ? ZERO_ADDRESS : (safeForm.to as `0x${string}`),
-      data: normalizeHexInput(safeForm.data) ?? "0x",
+      to: ZERO_ADDRESS,
+      data: "0x",
       fallbackHandler:
         safeForm.fallbackHandler.trim() === ""
           ? DEFAULT_SAFE_FALLBACK_HANDLER
           : (safeForm.fallbackHandler as `0x${string}`),
-      paymentToken: safeForm.paymentToken.trim() === "" ? ZERO_ADDRESS : (safeForm.paymentToken as `0x${string}`),
-      payment: BigInt(safeForm.payment || "0"),
-      paymentReceiver:
-        safeForm.paymentReceiver.trim() === "" ? ZERO_ADDRESS : (safeForm.paymentReceiver as `0x${string}`),
+      paymentToken: ZERO_ADDRESS,
+      payment: 0n,
+      paymentReceiver: ZERO_ADDRESS,
       factory: safeForm.factory.trim() === "" ? DEFAULT_SAFE_FACTORY : (safeForm.factory as `0x${string}`),
       proxyCreationCodeHash: (normalizeHexInput(safeForm.proxyCreationCodeHash) ??
         DEFAULT_SAFE_PROXY_CREATION_CODE_HASH) as `0x${string}`,
@@ -321,7 +310,7 @@ export function MinerConsole() {
               <CardTitle>Protocol</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 gap-1 rounded-xl border bg-muted p-1">
+              <div className="grid grid-cols-1 gap-1 rounded-xl border bg-muted p-1 sm:grid-cols-3">
                 {(["create2", "createx", "safe"] as Protocol[]).map((p) => (
                   <button
                     key={p}
@@ -495,46 +484,6 @@ export function MinerConsole() {
                             className="font-mono"
                           />
                         </Field>
-                        <Field>
-                          <FieldLabel>To</FieldLabel>
-                          <Input
-                            value={safeForm.to}
-                            onChange={(event) => updateSafe("to", event.target.value)}
-                            className="font-mono"
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>Data</FieldLabel>
-                          <Input
-                            value={safeForm.data}
-                            onChange={(event) => updateSafe("data", event.target.value)}
-                            className="font-mono"
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>Payment Token</FieldLabel>
-                          <Input
-                            value={safeForm.paymentToken}
-                            onChange={(event) => updateSafe("paymentToken", event.target.value)}
-                            className="font-mono"
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>Payment</FieldLabel>
-                          <Input
-                            value={safeForm.payment}
-                            onChange={(event) => updateSafe("payment", event.target.value)}
-                            className="font-mono"
-                          />
-                        </Field>
-                        <Field>
-                          <FieldLabel>Payment Receiver</FieldLabel>
-                          <Input
-                            value={safeForm.paymentReceiver}
-                            onChange={(event) => updateSafe("paymentReceiver", event.target.value)}
-                            className="font-mono"
-                          />
-                        </Field>
                       </div>
                     )}
                   </div>
@@ -550,7 +499,7 @@ export function MinerConsole() {
             <CardContent className="space-y-4">
               <div className="grid gap-4">
                 <Field>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {MATCHER_OPTIONS.map(({ type, icon: Icon, label }) => (
                       <button
                         key={type}
@@ -605,13 +554,16 @@ export function MinerConsole() {
       />
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between gap-2">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-1">
               <CardTitle>Ranked Results</CardTitle>
             </div>
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="secondary">
+                <Button
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                >
                   <Settings className="size-4" />
                   <span>Settings</span>
                 </Button>
@@ -624,7 +576,7 @@ export function MinerConsole() {
                 <div className="grid gap-5">
                   <Field>
                     <FieldLabel>Max Results</FieldLabel>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {[10, 25, 50, 100].map((n) => (
                         <button
                           key={n}
@@ -698,19 +650,23 @@ export function MinerConsole() {
                     <TableCell className="text-xs text-muted-foreground">{index + 1}</TableCell>
                     <TableCell className="font-medium">{result.score}</TableCell>
                     <TableCell className="min-w-0">
-                      <div className="">
+                      <div className="min-w-0 space-y-1">
                         <div className="flex min-w-0 items-center gap-2">
-                          <HighlightedAddress
-                            address={result.address}
-                            zeros={result.leadingZeroNibbles}
-                          />
+                          <div className="min-w-0 flex-1">
+                            <HighlightedAddress
+                              address={result.address}
+                              zeros={result.leadingZeroNibbles}
+                            />
+                          </div>
                           <CopyValueButton
                             value={result.address}
                             label="Copy address"
                           />
                         </div>
                         <div className="flex min-w-0 items-center gap-2">
-                          <p className="truncate font-mono text-sm text-muted-foreground">{result.salt}</p>
+                          <p className="min-w-0 flex-1 truncate font-mono text-sm text-muted-foreground">
+                            {result.salt}
+                          </p>
                           <CopyValueButton
                             value={result.salt}
                             label="Copy salt"

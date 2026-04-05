@@ -12,10 +12,10 @@ type WorkbenchLayoutProps = {
  */
 export function WorkbenchLayout({ sidebar, className, children }: PropsWithChildren<WorkbenchLayoutProps>) {
   return (
-    <div className={cn("flex flex-1 flex-col gap-2 py-4", className)}>
-      <section className="grid grid-cols-3 gap-4">
-        <div className="space-y-4">{sidebar}</div>
-        <div className="col-span-2 space-y-4">{children}</div>
+    <div className={cn("flex flex-1 flex-col gap-3 py-3 sm:gap-4 sm:py-4", className)}>
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-1">{sidebar}</div>
+        <div className="space-y-4 lg:col-span-2">{children}</div>
       </section>
     </div>
   );

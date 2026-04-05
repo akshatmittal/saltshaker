@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-import type { LucideIcon } from "lucide-react";
 import type { MiningSessionState, CheckWebGpuSupportResult } from "@akshatmittal/saltshaker";
+import type { LucideIcon } from "lucide-react";
 
 import { Play, Square } from "lucide-react";
 
@@ -69,7 +69,7 @@ export function TelemetryCard({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <CardTitle>Telemetry</CardTitle>
@@ -94,6 +94,7 @@ export function TelemetryCard({
             variant={active ? "destructive" : "default"}
             disabled={!support.supported}
             onClick={active ? onStop : onStart}
+            className="w-full sm:w-auto"
           >
             {active ? <Square className="size-4 fill-current" /> : <Play className="size-4 fill-current" />}
             {active ? "Stop" : startLabel}
@@ -104,7 +105,7 @@ export function TelemetryCard({
         {sessionState === null && emptyMessage ? (
           <EmptyState>{emptyMessage}</EmptyState>
         ) : (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <StatCard
               label="Status"
               value={sessionState?.status ?? "idle"}
