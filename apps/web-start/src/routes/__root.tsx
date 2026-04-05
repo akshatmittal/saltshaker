@@ -20,11 +20,11 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Salt Shaker",
+        title: "Saltshaker",
       },
       {
         name: "description",
-        content: "WebGPU based CREATE2 vanity address mining in the browser.",
+        content: "Extremely Fast WebGPU based CREATE2 Vanity Miner for Create2, CreateX and Safe deployments",
       },
     ],
     links: [

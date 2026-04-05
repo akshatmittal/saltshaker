@@ -36,15 +36,14 @@
     "clean": "rm -rf .turbo dist"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "peerDependencies": {
     "viem": "catalog:"
   },
   "devDependencies": {
     "@webgpu/types": "catalog:",
-    "@workspace/typescript-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:~",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "viem": "catalog:",

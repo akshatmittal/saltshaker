@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 
-import { AlignLeft, AlignRight, ChevronDown, ChevronUp, Copy, Hash, Search, Settings } from "lucide-react";
 import {
   createMiningSession,
   type AddressMatcherSpec,
@@ -8,6 +7,7 @@ import {
   type MatcherKind,
   type MiningJob,
 } from "@akshatmittal/saltshaker";
+import { AlignLeft, AlignRight, ChevronDown, ChevronUp, Copy, Hash, Search, Settings } from "lucide-react";
 import { toHex, type Hex } from "viem";
 
 import { EmptyState, TelemetryCard } from "@/components/miner/shared";
@@ -611,11 +611,9 @@ export function MinerConsole() {
             </div>
             <Dialog>
               <DialogTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                >
+                <Button variant="secondary">
                   <Settings className="size-4" />
+                  <span>Settings</span>
                 </Button>
               </DialogTrigger>
               <DialogContent>
