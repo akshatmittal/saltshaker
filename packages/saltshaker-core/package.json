@@ -1,6 +1,6 @@
 {
   "name": "@akshatmittal/saltshaker",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "WebGPU vanity miner for deterministic Ethereum deployments",
   "type": "module",
   "main": "./dist/index.mjs",
