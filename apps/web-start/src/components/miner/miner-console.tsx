@@ -7,7 +7,7 @@ import {
   type CreateXOperation,
   type MatcherKind,
   type MiningJob,
-} from "saltshaker";
+} from "@akshatmittal/saltshaker";
 import { toHex, type Hex } from "viem";
 
 import { EmptyState, TelemetryCard } from "@/components/miner/shared";

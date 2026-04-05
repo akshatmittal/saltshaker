@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-import type { MiningSession, MiningSessionState } from "saltshaker";
+import type { MiningSession, MiningSessionState } from "@akshatmittal/saltshaker";
 
-import { createMiningSession } from "saltshaker";
+import { createMiningSession } from "@akshatmittal/saltshaker";
 
 import { STANDARDIZED_CREATE2_BENCHMARK_PRESET } from "@/lib/standardized-create2-benchmark-preset";
 

@@ -1,4 +1,4 @@
-import type { Create2JobInput } from "saltshaker";
+import type { Create2JobInput } from "@akshatmittal/saltshaker";
 
 import { zeroAddress, zeroHash } from "viem";
 

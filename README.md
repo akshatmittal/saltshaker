@@ -43,7 +43,7 @@ Saltshaker is a WebGPU powered in-browser vanity salt miner for deterministic Et
 
 If you do not provide a matcher, Saltshaker defaults to `leadingZeros: 8`.
 
-You can also create custom matcher configurations to target very specific address patterns.
+You can also create custom matcher configurations to target very specific address patterns, such as the Uniswap V4 address mining competition!
 
 ## Technical Overview
 
@@ -97,7 +97,7 @@ The core package lives in `packages/saltshaker-core` and exports a very small AP
 Example:
 
 ```ts
-import { checkWebGpuSupport, createMiningSession } from "saltshaker";
+import { checkWebGpuSupport, createMiningSession } from "@akshatmittal/saltshaker";
 
 const support = await checkWebGpuSupport();
 if (!support.supported) {
@@ -173,4 +173,4 @@ pnpm lint
 - Node.js `>=24`
 - `pnpm@10`
 - A browser with WebGPU support for actual mining
-- `viem` as a peer dependency of the `saltshaker` package
+- `viem` as a peer dependency of the `@akshatmittal/saltshaker` package

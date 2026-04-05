@@ -63,6 +63,9 @@ importers:
 
   apps/web-start:
     dependencies:
+      '@akshatmittal/saltshaker':
+        specifier: workspace:*
+        version: link:../../packages/saltshaker-core
       '@fontsource-variable/geist':
         specifier: ^5.2.8
         version: 5.2.8
@@ -99,9 +102,6 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.4(react@19.2.4)
-      saltshaker:
-        specifier: workspace:*
-        version: link:../../packages/saltshaker-core
       shadcn:
         specifier: ^4.1.2
         version: 4.1.2(@types/node@24.12.2)(typescript@6.0.2)
@@ -1089,8 +1089,8 @@ packages:
   '@radix-ui/react-compose-refs@1.1.2':
     resolution: {integrity: sha512-z4eqJvfiNnFMHIIvXP3CY57y2WJs5g2v3X0zm9mEJkrkNv4rDxu+sg9Jh8EkXyeqBkB7SOcboo9dMVqhyrACIg==}
     peerDependencies:
-      '@types/react': ^19.2.14
-      react: ^19.2.4
+      '@types/react': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
     peerDependenciesMeta:
       '@types/react':
         optional: true

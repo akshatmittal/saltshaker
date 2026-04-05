@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import type { LucideIcon } from "lucide-react";
-import type { MiningSessionState, CheckWebGpuSupportResult } from "saltshaker";
+import type { MiningSessionState, CheckWebGpuSupportResult } from "@akshatmittal/saltshaker";
 
 import { Play, Square } from "lucide-react";
 
