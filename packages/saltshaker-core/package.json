@@ -1,10 +1,20 @@
 {
   "name": "@akshatmittal/saltshaker",
   "version": "0.0.0",
+  "description": "WebGPU vanity miner for deterministic Ethereum deployments",
   "type": "module",
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akshatmittal/saltshaker.git",
+    "directory": "packages/saltshaker-core"
+  },
+  "homepage": "https://github.com/akshatmittal/saltshaker#readme",
+  "bugs": {
+    "url": "https://github.com/akshatmittal/saltshaker/issues"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
@@ -26,7 +36,8 @@
     "clean": "rm -rf .turbo dist"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "peerDependencies": {
     "viem": "catalog:"

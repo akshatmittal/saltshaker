@@ -4,18 +4,22 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "build:app": "turbo build --filter='@workspace/demo'",
+    "build:app": "turbo build --filter='@workspace/web-start'",
     "build:lib": "turbo build --filter='!@workspace/*'",
+    "changeset": "changeset",
     "dev": "turbo dev",
     "dev:lib": "turbo dev --filter='!@workspace/*'",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
+    "release": "changeset publish",
     "typecheck": "turbo typecheck",
+    "version": "changeset version",
     "clean": "turbo clean"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "@workspace/typescript-config": "workspace:*",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
