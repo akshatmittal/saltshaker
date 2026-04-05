@@ -19,6 +19,4 @@ catalog:
 
 catalogMode: prefer
 cleanupUnusedCatalogs: true
-
-dedupeDirectDeps: true
 dedupePeers: true
