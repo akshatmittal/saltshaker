@@ -32,7 +32,8 @@ jobs:
       - name: Build Library
         run: pnpm build:lib
 
-      - name: Create PR or Publish
+      - name: Changeset Release
+        id: changesets
         uses: changesets/action@v1
         with:
           version: pnpm version

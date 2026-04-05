@@ -158,7 +158,7 @@ importers:
         specifier: 'catalog:'
         version: 0.1.69
       '@workspace/typescript-config':
-        specifier: workspace:~
+        specifier: workspace:*
         version: link:../../tooling/typescript-config
       tsdown:
         specifier: 'catalog:'
