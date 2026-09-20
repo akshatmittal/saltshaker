@@ -219,10 +219,8 @@ fn keccak256_96(input: array<u32, 24>) -> array<u32, 8> {
 }
 
 fn keccak256_85_address(factory: array<u32, 5>, salt: array<u32, 8>, code_hash: array<u32, 8>) -> array<u32, 5> {
+    // WGSL zero-initializes function variables; no state-clearing loop is needed.
     var state: array<xu64, 25>;
-    for (var i = 0u; i < 25u; i++) {
-        state[i] = make_u64(0u, 0u);
-    }
 
     let s0_low = 0xFFu | (factory[0] << 8u);
     let s0_high = (factory[0] >> 24u) | (factory[1] << 8u);
