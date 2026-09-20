@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Saltshaker WebGPU research harness</title>
+  </head>
+  <body>
+    <h1>Saltshaker WebGPU research harness</h1>
+    <p>Options (JSON):</p>
+    <textarea
+      id="options"
+      cols="80"
+      rows="10"
+    >
+{
+  "variants": ["baseline", "current"],
+  "warmups": 2,
+  "trials": 7,
+  "dispatchX": 8,
+  "dispatchY": 1
+}</textarea
+    >
+    <p>
+      <button
+        id="run"
+        type="button"
+      >
+        Run correctness and benchmarks
+      </button>
+    </p>
+    <pre id="output">Ready. See README.md and the browser console for window.runResearch(options).</pre>
+    <script
+      type="module"
+      src="./harness.ts"
+    ></script>
+  </body>
+</html>
