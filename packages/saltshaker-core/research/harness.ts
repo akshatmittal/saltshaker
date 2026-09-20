@@ -19,6 +19,17 @@ import "./autoresearch";
 type Variant = "baseline" | "current";
 type Protocol = PreparedJob["protocol"];
 
+export type ResearchProgress =
+  | { type: "status"; message: string }
+  | { type: "adapter"; adapter: ResearchResult["adapter"] }
+  | { type: "correctness"; passed: number; total: number; workload: string; variant: Variant }
+  | { type: "benchmark"; benchmark: BenchmarkResult };
+
+export interface ResearchControl {
+  signal?: AbortSignal;
+  onProgress?: (event: ResearchProgress) => void;
+}
+
 export interface ResearchOptions {
   variants?: Variant[];
   warmups?: number;
@@ -682,10 +693,18 @@ function pipelineKey(variant: Variant, protocol: Protocol, entrypoint: "verify" 
   return `${variant}/${protocol}/${entrypoint}`;
 }
 
-async function run(optionsInput: ResearchOptions = {}): Promise<ResearchResult> {
+async function run(optionsInput: ResearchOptions, control: ResearchControl): Promise<ResearchResult> {
+  const checkCancelled = () => control.signal?.throwIfAborted();
+  const report = (event: ResearchProgress) => {
+    checkCancelled();
+    if (event.type === "status") window.researchProgress = event.message;
+    control.onProgress?.(event);
+  };
+  report({ type: "status", message: "Loading shader sources and requesting a GPU adapter…" });
   const options = normalizeOptions(optionsInput);
   assertCondition(navigator.gpu !== undefined, "WebGPU is not available in this browser");
   const cores = await loadCores(options.variants, options.experiment);
+  checkCancelled();
   const coreSha256: Partial<Record<Variant, string>> = {};
   for (const variant of options.variants) coreSha256[variant] = await sha256(cores[variant]!);
   const allWorkloads = createWorkloads();
@@ -710,7 +729,9 @@ async function run(optionsInput: ResearchOptions = {}): Promise<ResearchResult> 
       "Freeze baseline-createx.wgsl as described in research/README.md",
     );
   }
+  checkCancelled();
   const adapter = await navigator.gpu.requestAdapter({ powerPreference: options.powerPreference });
+  checkCancelled();
   assertCondition(adapter !== null, "No WebGPU adapter was found");
   assertCondition(
     options.dispatchX <= adapter.limits.maxComputeWorkgroupsPerDimension,
@@ -745,6 +766,7 @@ async function run(optionsInput: ResearchOptions = {}): Promise<ResearchResult> 
     if (existing !== undefined) return existing;
     const core = cores[variant];
     assertCondition(core !== undefined, `No core source loaded for ${variant}`);
+    report({ type: "status", message: `Compiling ${variant}/${protocol}/${entrypoint}…` });
     const source =
       entrypoint === "verify"
         ? [core, protocolSource, verificationKernel].join("\n")
@@ -762,23 +784,49 @@ async function run(optionsInput: ResearchOptions = {}): Promise<ResearchResult> 
   };
 
   try {
+    report({
+      type: "adapter",
+      adapter: {
+        vendor: adapter.info?.vendor ?? "",
+        architecture: adapter.info?.architecture ?? "",
+        device: adapter.info?.device ?? "",
+        description: adapter.info?.description ?? "",
+        features: [...adapter.features].sort(),
+        timestampQuery,
+        limits: {
+          maxComputeInvocationsPerWorkgroup: adapter.limits.maxComputeInvocationsPerWorkgroup,
+          maxComputeWorkgroupsPerDimension: adapter.limits.maxComputeWorkgroupsPerDimension,
+          maxStorageBufferBindingSize: adapter.limits.maxStorageBufferBindingSize,
+        },
+      },
+    });
     let correctnessCount = 0;
     for (const variant of options.variants) {
       for (const workload of workloads) {
+        checkCancelled();
         const pipeline = await getPipeline(variant, workload.job, "verify");
+        checkCancelled();
         correctnessCount += await verifyWorkload(guard, pipeline, workload, variant);
+        report({
+          type: "correctness",
+          passed: correctnessCount,
+          total: workloads.length * options.variants.length * VERIFY_INVOCATIONS,
+          workload: workload.name,
+          variant,
+        });
       }
     }
 
     const benchmarks: BenchmarkResult[] = [];
     for (const workload of workloads) {
-      window.researchProgress = `Benchmarking ${workload.name}`;
+      report({ type: "status", message: `Benchmarking ${workload.name}` });
       const resources = new Map<Variant, BenchmarkResources>();
       const productionPipelines = new Map<Variant, GPUComputePipeline>();
       const samples = new Map<Variant, RawSample[]>();
       try {
         for (const variant of options.variants) {
           const pipeline = await getPipeline(variant, workload.job, "production-main");
+          checkCancelled();
           productionPipelines.set(variant, pipeline);
           resources.set(
             variant,
@@ -790,15 +838,19 @@ async function run(optionsInput: ResearchOptions = {}): Promise<ResearchResult> 
         }
 
         for (let warmup = 0; warmup < options.warmups; warmup += 1) {
+          report({ type: "status", message: `${workload.name}: warmup ${warmup + 1}/${options.warmups}` });
           const order = warmup % 2 === 0 ? options.variants : [...options.variants].reverse();
           for (const variant of order) {
+            checkCancelled();
             await dispatchBenchmark(guard, productionPipelines.get(variant)!, resources.get(variant)!, options, false);
           }
         }
 
         for (let trial = 0; trial < options.trials; trial += 1) {
+          report({ type: "status", message: `${workload.name}: trial ${trial + 1}/${options.trials}` });
           const order = trial % 2 === 0 ? options.variants : [...options.variants].reverse();
           for (let orderIndex = 0; orderIndex < order.length; orderIndex += 1) {
+            checkCancelled();
             const variant = order[orderIndex]!;
             const timing = await dispatchBenchmark(
               guard,
@@ -827,6 +879,7 @@ async function run(optionsInput: ResearchOptions = {}): Promise<ResearchResult> 
           invocations: options.dispatchX * options.dispatchY * WORKGROUP_SIZE,
           variants,
         });
+        report({ type: "benchmark", benchmark: benchmarks[benchmarks.length - 1]! });
       } finally {
         for (const resource of resources.values()) destroyBenchmarkResources(resource);
       }
@@ -843,10 +896,10 @@ async function run(optionsInput: ResearchOptions = {}): Promise<ResearchResult> 
         coreSha256,
       },
       adapter: {
-        vendor: adapter.info.vendor,
-        architecture: adapter.info.architecture,
-        device: adapter.info.device,
-        description: adapter.info.description,
+        vendor: adapter.info?.vendor ?? "",
+        architecture: adapter.info?.architecture ?? "",
+        device: adapter.info?.device ?? "",
+        description: adapter.info?.description ?? "",
         features: [...adapter.features].sort(),
         timestampQuery,
         limits: {
@@ -870,32 +923,26 @@ async function run(optionsInput: ResearchOptions = {}): Promise<ResearchResult> 
   }
 }
 
+let running = false;
+
+export async function runResearch(
+  options: ResearchOptions = {},
+  control: ResearchControl = {},
+): Promise<ResearchResult> {
+  if (running) throw new Error("A GPU research run is already active");
+  running = true;
+  try {
+    return await run(options, control);
+  } finally {
+    running = false;
+  }
+}
+
 declare global {
   interface Window {
-    runResearch: (options?: ResearchOptions) => Promise<ResearchResult>;
+    runResearch: typeof runResearch;
     researchProgress: string;
   }
 }
 
-window.runResearch = run;
-
-const button = document.querySelector<HTMLButtonElement>("#run");
-const optionsElement = document.querySelector<HTMLTextAreaElement>("#options");
-const output = document.querySelector<HTMLElement>("#output");
-if (button !== null && optionsElement !== null && output !== null) {
-  button.addEventListener("click", async () => {
-    button.disabled = true;
-    output.textContent = "Running…";
-    try {
-      const options = JSON.parse(optionsElement.value) as ResearchOptions;
-      const result = await run(options);
-      output.textContent = JSON.stringify(result, null, 2);
-    } catch (error) {
-      const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-      output.textContent = message;
-      console.error(error);
-    } finally {
-      button.disabled = false;
-    }
-  });
-}
+window.runResearch = runResearch;

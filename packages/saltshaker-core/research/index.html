@@ -6,36 +6,424 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0"
     />
-    <title>Saltshaker WebGPU research harness</title>
+    <meta
+      name="color-scheme"
+      content="light"
+    />
+    <title>Saltshaker GPU Lab</title>
+    <link
+      rel="stylesheet"
+      href="./dashboard.css"
+    />
+    <script>
+      window.__dashboardTimer = window.setTimeout(function () {
+        if (document.documentElement.dataset.dashboardReady === "true") return;
+        var error = document.getElementById("module-error");
+        if (error) error.hidden = false;
+      }, 8000);
+      window.addEventListener(
+        "error",
+        function (event) {
+          if (document.documentElement.dataset.dashboardReady === "true") return;
+          if (event.target instanceof HTMLScriptElement) {
+            var error = document.getElementById("module-error");
+            if (error) error.hidden = false;
+          }
+        },
+        true,
+      );
+    </script>
   </head>
   <body>
-    <h1>Saltshaker WebGPU research harness</h1>
-    <p>Options (JSON):</p>
-    <textarea
-      id="options"
-      cols="80"
-      rows="10"
+    <a
+      class="skip-link"
+      href="#results"
+      >Skip to results</a
     >
-{
-  "variants": ["baseline", "current"],
-  "warmups": 2,
-  "trials": 7,
-  "dispatchX": 8,
-  "dispatchY": 1
-}</textarea
-    >
-    <p>
-      <button
-        id="run"
-        type="button"
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">WebGPU research console</p>
+          <h1>Saltshaker GPU Lab</h1>
+          <p class="lede">
+            Compare the production hash core with its baseline using correctness checks and timed dispatches.
+          </p>
+        </div>
+        <section
+          class="capability-card"
+          aria-labelledby="capability-title"
+        >
+          <div class="capability-heading">
+            <div>
+              <p class="card-kicker">This browser</p>
+              <h2 id="capability-title">GPU capability</h2>
+            </div>
+            <span
+              id="capability-badge"
+              class="badge badge-pending"
+              >Checking…</span
+            >
+          </div>
+          <dl class="capability-details">
+            <div>
+              <dt>Adapter</dt>
+              <dd id="adapter-name">Detecting WebGPU…</dd>
+            </div>
+            <div>
+              <dt>Type</dt>
+              <dd id="adapter-type">—</dd>
+            </div>
+            <div>
+              <dt>GPU timing</dt>
+              <dd id="timestamp-support">—</dd>
+            </div>
+          </dl>
+          <div
+            id="capability-help"
+            class="capability-help"
+            hidden
+          >
+            <p>
+              Use a current Chrome, Edge, or Safari build, enable hardware acceleration, and open this page over HTTPS
+              or localhost. Your browser or system must expose WebGPU.
+            </p>
+            <a
+              id="open-new-tab"
+              href="./"
+              target="_blank"
+              rel="noreferrer"
+              hidden
+              >Open this lab in a new tab</a
+            >
+          </div>
+        </section>
+      </header>
+
+      <div
+        id="module-error"
+        class="alert alert-error"
+        role="alert"
+        hidden
       >
-        Run correctness and benchmarks
-      </button>
-    </p>
-    <pre id="output">Ready. See README.md and the browser console for window.runResearch(options).</pre>
+        <div>
+          <strong>The dashboard script did not load.</strong>
+          <p>
+            Reload the page. If the problem continues, check that the research server is running and inspect the browser
+            console.
+          </p>
+        </div>
+        <button
+          type="button"
+          onclick="window.location.reload()"
+        >
+          Reload
+        </button>
+      </div>
+      <noscript>
+        <div class="alert alert-error">
+          <strong>JavaScript is required.</strong> Enable JavaScript to load recorded results or run WebGPU research.
+        </div>
+      </noscript>
+
+      <section
+        class="controls-card"
+        aria-labelledby="controls-title"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="card-kicker">Run configuration</p>
+            <h2 id="controls-title">Research controls</h2>
+          </div>
+          <p class="control-note">Nothing runs automatically.</p>
+        </div>
+        <form id="research-form">
+          <div class="controls-grid">
+            <fieldset class="scope-fieldset">
+              <legend>Scope</legend>
+              <label class="choice">
+                <input
+                  type="radio"
+                  name="scope"
+                  value="quick"
+                  checked
+                />
+                <span><strong>Quick CREATE2</strong><small>One representative workload</small></span>
+              </label>
+              <label class="choice">
+                <input
+                  type="radio"
+                  name="scope"
+                  value="pair"
+                />
+                <span><strong>CREATE2 + Safe</strong><small>Two protocol paths</small></span>
+              </label>
+              <label class="choice">
+                <input
+                  type="radio"
+                  name="scope"
+                  value="full"
+                />
+                <span><strong>Full matrix</strong><small>All research workloads</small></span>
+              </label>
+            </fieldset>
+
+            <div class="control-group">
+              <label class="checkbox-control">
+                <input
+                  id="compare-baseline"
+                  type="checkbox"
+                  checked
+                />
+                <span><strong>Compare baseline</strong><small>Run baseline and current variants</small></span>
+              </label>
+            </div>
+
+            <div class="number-controls">
+              <label>
+                <span>Dispatch X</span>
+                <input
+                  id="dispatch-x"
+                  type="number"
+                  min="1"
+                  max="16384"
+                  step="1"
+                  value="8"
+                  required
+                  inputmode="numeric"
+                />
+              </label>
+              <div class="fixed-value">
+                <span>Dispatch Y</span>
+                <output>1</output>
+              </div>
+              <label>
+                <span>Trials</span>
+                <input
+                  id="trials"
+                  type="number"
+                  min="1"
+                  max="50"
+                  step="1"
+                  value="7"
+                  required
+                  inputmode="numeric"
+                />
+              </label>
+              <label>
+                <span>Warmups</span>
+                <input
+                  id="warmups"
+                  type="number"
+                  min="0"
+                  max="20"
+                  step="1"
+                  value="2"
+                  required
+                  inputmode="numeric"
+                />
+              </label>
+            </div>
+          </div>
+
+          <div class="controls-footer">
+            <p
+              id="scope-warning"
+              class="scope-warning"
+            >
+              The full matrix compiles several pipelines and may take minutes. Software adapters may take much longer.
+            </p>
+            <div class="run-actions">
+              <button
+                id="start-button"
+                class="button button-primary"
+                type="submit"
+                disabled
+              >
+                Start research
+              </button>
+              <button
+                id="stop-button"
+                class="button button-danger"
+                type="button"
+                disabled
+              >
+                Stop
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <div
+        id="run-error"
+        class="alert alert-error"
+        role="alert"
+        hidden
+      >
+        <div>
+          <strong>Research run failed</strong>
+          <p id="run-error-message"></p>
+          <p>You can adjust the scope and try again. Recorded results remain available.</p>
+        </div>
+        <button
+          id="retry-button"
+          type="button"
+        >
+          Try again
+        </button>
+      </div>
+
+      <section
+        id="results"
+        class="workspace"
+        aria-labelledby="results-title"
+      >
+        <div class="results-card">
+          <div class="results-header">
+            <div>
+              <p class="card-kicker">Measurements</p>
+              <h2 id="results-title">Results</h2>
+            </div>
+            <div class="view-actions">
+              <div
+                class="segmented"
+                role="group"
+                aria-label="Choose results source"
+              >
+                <button
+                  id="recorded-view"
+                  type="button"
+                  aria-pressed="true"
+                >
+                  Recorded sample
+                </button>
+                <button
+                  id="local-view"
+                  type="button"
+                  aria-pressed="false"
+                  disabled
+                >
+                  This device
+                </button>
+              </div>
+              <button
+                id="export-button"
+                class="button button-secondary"
+                type="button"
+                disabled
+              >
+                Export JSON
+              </button>
+            </div>
+          </div>
+
+          <div
+            id="result-source"
+            class="source-banner source-recorded"
+          >
+            <div>
+              <strong id="source-title">Recorded SwiftShader results — not this device</strong>
+              <p id="source-description">Loading the checked-in research sample…</p>
+            </div>
+            <span
+              id="source-status"
+              class="badge badge-neutral"
+              >Recorded</span
+            >
+          </div>
+
+          <dl
+            class="result-summary"
+            aria-label="Selected result summary"
+          >
+            <div>
+              <dt>Captured</dt>
+              <dd id="summary-date">—</dd>
+            </div>
+            <div>
+              <dt>Correctness</dt>
+              <dd id="summary-correctness">—</dd>
+            </div>
+            <div>
+              <dt>Dispatch</dt>
+              <dd id="summary-dispatch">—</dd>
+            </div>
+            <div>
+              <dt>Sample plan</dt>
+              <dd id="summary-plan">—</dd>
+            </div>
+          </dl>
+
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">
+                Baseline and current benchmark timing by workload
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Workload</th>
+                  <th scope="col">Baseline ms</th>
+                  <th scope="col">Current ms</th>
+                  <th scope="col">Speedup</th>
+                </tr>
+              </thead>
+              <tbody id="results-body">
+                <tr class="empty-row">
+                  <td colspan="4">Loading recorded results…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="timing-note">
+            GPU medians are used when both variants report valid GPU timestamps; otherwise the comparison uses
+            wall-clock medians.
+          </p>
+        </div>
+
+        <aside
+          class="activity-card"
+          aria-labelledby="activity-title"
+        >
+          <div class="activity-header">
+            <div>
+              <p class="card-kicker">Live run</p>
+              <h2 id="activity-title">Activity</h2>
+            </div>
+            <span id="elapsed">Idle</span>
+          </div>
+          <div
+            id="stage"
+            class="stage"
+            aria-live="polite"
+          >
+            <div class="stage-row">
+              <span
+                id="stage-indicator"
+                class="status-dot"
+              ></span>
+              <strong id="stage-message">Ready to run</strong>
+            </div>
+            <progress
+              id="run-progress"
+              aria-label="Research run in progress"
+              hidden
+            ></progress>
+            <p id="correctness-progress">No local correctness checks yet.</p>
+          </div>
+          <ol
+            id="activity-log"
+            class="activity-log"
+            aria-live="polite"
+            aria-relevant="additions"
+          >
+            <li><time>—</time><span>Dashboard ready. Detecting this browser’s GPU capability.</span></li>
+          </ol>
+        </aside>
+      </section>
+    </main>
     <script
       type="module"
-      src="./harness.ts"
+      src="./dashboard.ts"
     ></script>
   </body>
 </html>

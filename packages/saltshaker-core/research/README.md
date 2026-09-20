@@ -4,7 +4,9 @@ This browser-only harness compares frozen baseline core/CreateX shaders with pro
 
 ## Freeze the baseline
 
-Before changing the production core, run from the repository root:
+The server automatically serves the original optimization baseline from Git revision `06445c5712df561e95fefc89499317619ae97dbe`. No baseline setup is needed with full Git history. For a shallow clone, fetch that revision or run `git fetch --unshallow origin` first. Missing history produces an explicit server error, never a comparison of current code against itself.
+
+To override that baseline for a new experiment, run from the repository root before changing the production core:
 
 ```sh
 cp packages/saltshaker-core/src/gpu/shaders/common/core.wgsl \
@@ -15,7 +17,7 @@ cp packages/saltshaker-core/src/gpu/shaders/protocols/createx.wgsl \
 
 Both baseline files are intentionally ignored by `research/.gitignore`: they are experiment inputs, not second maintained shaders. To preserve or share an experiment, record the baseline commit SHA with the returned JSON (the result includes the current page URL and options).
 
-The harness can run without these files only when `variants` is `["current"]` and no `experiment` is supplied.
+Local baseline files take precedence over the pinned Git revision. With another static server, provide these files yourself or use `variants: ["current"]` without an `experiment`.
 
 To reproduce the original optimization baseline after checking out this branch:
 
@@ -34,7 +36,11 @@ git show 06445c5712df561e95fefc89499317619ae97dbe:packages/saltshaker-core/src/g
 node packages/saltshaker-core/research/serve.mjs
 ```
 
-Open the URL printed by Vite in a WebGPU-capable browser. Run with the button, or in DevTools:
+Open the URL printed by Vite. The dashboard immediately shows the checked-in SwiftShader results, explicitly labelled **not this device**, even when WebGPU is unavailable. GPU capability and recovery guidance appear separately.
+
+The default live scope is **Quick CREATE2**. Choose scope, baseline comparison, dispatch size, warmups and trials, then select **Start research**. Compilation stages, elapsed time, correctness counts and completed benchmark rows update live. **Stop** is cooperative: it prevents subsequent work but must wait for an in-flight GPU compilation or dispatch. Failed or stopped runs are incomplete, not passing measurements. Switch between recorded and live results and use **Export JSON** for the selected completed result.
+
+The full matrix can compile for several minutes, especially on software adapters. Quick runs are smoke tests, not enough evidence to promote further kernel optimizations. For detailed runs, use DevTools:
 
 ```js
 const result = await window.runResearch({
