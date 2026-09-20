@@ -3,7 +3,7 @@ import { concat, encodeAbiParameters, getAddress, keccak256, pad, toHex, type Ad
 import type { PreparedJob } from "../src/internal/types";
 import type { MiningJob } from "../src/types";
 
-import { buildConstantsWords, createEmptyResultWords } from "../src/gpu/packing";
+import { buildConstantsWords, buildPipelineConstants, createEmptyResultWords } from "../src/gpu/packing";
 import currentCore from "../src/gpu/shaders/common/core.wgsl?raw";
 import productionKernel from "../src/gpu/shaders/common/kernel.wgsl?raw";
 import leadingZerosMatcher from "../src/gpu/shaders/matchers/leading-zeros.wgsl?raw";
@@ -52,6 +52,8 @@ interface CompileMeasurement {
   variant: Variant;
   protocol: Protocol;
   entrypoint: "verify" | "production-main";
+  constants: Record<string, number>;
+  sourceSha256: string;
   ms: number;
 }
 
@@ -419,6 +421,7 @@ async function compilePipeline(
   source: string,
   entryPoint: "verify" | "main",
   label: string,
+  constants: Record<string, number>,
 ): Promise<{ pipeline: GPUComputePipeline; ms: number }> {
   window.researchProgress = `Compiling ${label}`;
   const started = performance.now();
@@ -435,7 +438,7 @@ async function compilePipeline(
     return guard.device.createComputePipelineAsync({
       label,
       layout: "auto",
-      compute: { module, entryPoint },
+      compute: { module, entryPoint, constants },
     });
   });
   return { pipeline, ms: performance.now() - started };
@@ -695,6 +698,18 @@ async function run(optionsInput: ResearchOptions = {}): Promise<ResearchResult> 
         options.workloads.every((name) => allWorkloads.some((workload) => workload.name === name))),
     "Unknown or empty workload selection",
   );
+  let baselineCreateX = createXProtocol;
+  if (
+    workloads.some((workload) => workload.job.protocol === "createx") &&
+    (options.variants.includes("baseline") || options.experiment !== undefined)
+  ) {
+    const response = await fetch("./baseline-createx.wgsl", { cache: "no-store" });
+    baselineCreateX = await response.text();
+    assertCondition(
+      response.ok && baselineCreateX.includes("fn createx_guarded_salt"),
+      "Freeze baseline-createx.wgsl as described in research/README.md",
+    );
+  }
   const adapter = await navigator.gpu.requestAdapter({ powerPreference: options.powerPreference });
   assertCondition(adapter !== null, "No WebGPU adapter was found");
   assertCondition(
@@ -714,26 +729,35 @@ async function run(optionsInput: ResearchOptions = {}): Promise<ResearchResult> 
 
   const getPipeline = async (
     variant: Variant,
-    protocol: Protocol,
+    job: PreparedJob,
     entrypoint: "verify" | "production-main",
   ): Promise<GPUComputePipeline> => {
-    const key = pipelineKey(variant, protocol, entrypoint);
+    const protocol = job.protocol;
+    // Core experiments hold the protocol source fixed. Normal comparisons also
+    // measure production's job-specific CreateX pipeline specialization.
+    const protocolSource =
+      protocol === "createx" && (variant === "baseline" || options.experiment !== undefined)
+        ? baselineCreateX
+        : protocolSources[protocol];
+    const constants = protocolSource.includes("override createx_guard_mode") ? buildPipelineConstants(job) : {};
+    const key = pipelineKey(variant, protocol, entrypoint) + JSON.stringify(constants);
     const existing = pipelines.get(key);
     if (existing !== undefined) return existing;
     const core = cores[variant];
     assertCondition(core !== undefined, `No core source loaded for ${variant}`);
     const source =
       entrypoint === "verify"
-        ? [core, protocolSources[protocol], verificationKernel].join("\n")
-        : [core, leadingZerosMatcher, protocolSources[protocol], productionKernel].join("\n");
+        ? [core, protocolSource, verificationKernel].join("\n")
+        : [core, leadingZerosMatcher, protocolSource, productionKernel].join("\n");
     const compiled = await compilePipeline(
       guard,
       source,
       entrypoint === "verify" ? "verify" : "main",
-      `${variant}-${protocol}-${entrypoint}`,
+      `${variant}-${protocol}-${entrypoint}-${Object.values(constants).join("-")}`,
+      constants,
     );
     pipelines.set(key, compiled.pipeline);
-    compileMs.push({ variant, protocol, entrypoint, ms: compiled.ms });
+    compileMs.push({ variant, protocol, entrypoint, constants, sourceSha256: await sha256(source), ms: compiled.ms });
     return compiled.pipeline;
   };
 
@@ -741,7 +765,7 @@ async function run(optionsInput: ResearchOptions = {}): Promise<ResearchResult> 
     let correctnessCount = 0;
     for (const variant of options.variants) {
       for (const workload of workloads) {
-        const pipeline = await getPipeline(variant, workload.job.protocol, "verify");
+        const pipeline = await getPipeline(variant, workload.job, "verify");
         correctnessCount += await verifyWorkload(guard, pipeline, workload, variant);
       }
     }
@@ -754,7 +778,7 @@ async function run(optionsInput: ResearchOptions = {}): Promise<ResearchResult> 
       const samples = new Map<Variant, RawSample[]>();
       try {
         for (const variant of options.variants) {
-          const pipeline = await getPipeline(variant, workload.job.protocol, "production-main");
+          const pipeline = await getPipeline(variant, workload.job, "production-main");
           productionPipelines.set(variant, pipeline);
           resources.set(
             variant,

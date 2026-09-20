@@ -1,0 +1,1449 @@
+[
+  {
+    "experiment": {
+      "staticIO": true
+    },
+    "geometricSpeedup": 1.1096219304894472,
+    "result": {
+      "adapter": {
+        "architecture": "swiftshader",
+        "description": "",
+        "device": "",
+        "features": [
+          "bgra8unorm-storage",
+          "chromium-experimental-sampling-resource-table",
+          "chromium-experimental-timestamp-query-inside-passes",
+          "clip-distances",
+          "core-features-and-limits",
+          "depth-clip-control",
+          "depth32float-stencil8",
+          "float32-blendable",
+          "float32-filterable",
+          "indirect-first-instance",
+          "rg11b10ufloat-renderable",
+          "subgroup-size-control",
+          "subgroups",
+          "texture-component-swizzle",
+          "texture-compression-astc",
+          "texture-compression-astc-sliced-3d",
+          "texture-compression-bc",
+          "texture-compression-bc-sliced-3d",
+          "texture-compression-etc2",
+          "texture-compression-unaligned",
+          "timestamp-query"
+        ],
+        "limits": {
+          "maxComputeInvocationsPerWorkgroup": 256,
+          "maxComputeWorkgroupsPerDimension": 65535,
+          "maxStorageBufferBindingSize": 1073741824
+        },
+        "timestampQuery": true,
+        "vendor": "google"
+      },
+      "benchmarks": [
+        {
+          "invocations": 1024,
+          "protocol": "create2",
+          "variants": {
+            "baseline": {
+              "medianGpuMs": 2.69072,
+              "medianWallMs": 4.100000000093132,
+              "samples": [
+                {
+                  "gpuMs": 2.69072,
+                  "order": 0,
+                  "trial": 0,
+                  "wallMs": 4.699999999953434
+                },
+                {
+                  "gpuMs": 2.473748,
+                  "order": 1,
+                  "trial": 1,
+                  "wallMs": 3
+                },
+                {
+                  "gpuMs": 2.720955,
+                  "order": 0,
+                  "trial": 2,
+                  "wallMs": 4.100000000093132
+                },
+                {
+                  "gpuMs": 2.803903,
+                  "order": 1,
+                  "trial": 3,
+                  "wallMs": 4.300000000046566
+                },
+                {
+                  "gpuMs": 2.549271,
+                  "order": 0,
+                  "trial": 4,
+                  "wallMs": 3.900000000023283
+                },
+                {
+                  "gpuMs": 2.7182,
+                  "order": 1,
+                  "trial": 5,
+                  "wallMs": 4.5
+                },
+                {
+                  "gpuMs": 2.451174,
+                  "order": 0,
+                  "trial": 6,
+                  "wallMs": 2.900000000023283
+                }
+              ]
+            },
+            "current": {
+              "medianGpuMs": 2.424898,
+              "medianWallMs": 3,
+              "samples": [
+                {
+                  "gpuMs": 2.447871,
+                  "order": 1,
+                  "trial": 0,
+                  "wallMs": 4
+                },
+                {
+                  "gpuMs": 2.402736,
+                  "order": 0,
+                  "trial": 1,
+                  "wallMs": 4.199999999953434
+                },
+                {
+                  "gpuMs": 2.502392,
+                  "order": 1,
+                  "trial": 2,
+                  "wallMs": 3
+                },
+                {
+                  "gpuMs": 2.455752,
+                  "order": 0,
+                  "trial": 3,
+                  "wallMs": 2.900000000023283
+                },
+                {
+                  "gpuMs": 2.424898,
+                  "order": 1,
+                  "trial": 4,
+                  "wallMs": 2.900000000023283
+                },
+                {
+                  "gpuMs": 2.336878,
+                  "order": 0,
+                  "trial": 5,
+                  "wallMs": 3.900000000023283
+                },
+                {
+                  "gpuMs": 2.31919,
+                  "order": 1,
+                  "trial": 6,
+                  "wallMs": 2.8999999999068677
+                }
+              ]
+            }
+          },
+          "workload": "create2"
+        }
+      ],
+      "compileMs": [
+        {
+          "entrypoint": "verify",
+          "ms": 7840.800000000047,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "verify",
+          "ms": 9013.099999999977,
+          "protocol": "create2",
+          "variant": "current"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 10482.20000000007,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 9707.20000000007,
+          "protocol": "create2",
+          "variant": "current"
+        }
+      ],
+      "correctness": {
+        "casesPerVariant": 4,
+        "count": 8,
+        "nonces": ["0x12345678fffffffe", "0x12345678ffffffff", "0x1234567900000000", "0x1234567900000001"],
+        "passed": true,
+        "workloads": ["create2"]
+      },
+      "environment": {
+        "coreSha256": {
+          "baseline": "a53d645e45548d1625edb534791ba875c924668543d2787e396329c8d17ae585",
+          "current": "2af07d040febdf9e00577998d3ccd0bd31f947ceaa5ab956b02930e422ed0896"
+        },
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+      },
+      "generatedAt": "2026-09-20T20:41:29.306Z",
+      "options": {
+        "dispatchX": 16,
+        "dispatchY": 1,
+        "experiment": {
+          "staticIO": true
+        },
+        "powerPreference": "high-performance",
+        "timestamps": true,
+        "trials": 7,
+        "variants": ["baseline", "current"],
+        "warmups": 2,
+        "workloads": ["create2"]
+      },
+      "page": "http://localhost:5174/",
+      "schemaVersion": 1
+    },
+    "worstSpeedup": 1.1096219304894472
+  },
+  {
+    "experiment": {
+      "roundsPerIteration": 1,
+      "staticIO": true
+    },
+    "geometricSpeedup": 0.9780690495380258,
+    "result": {
+      "adapter": {
+        "architecture": "swiftshader",
+        "description": "",
+        "device": "",
+        "features": [
+          "bgra8unorm-storage",
+          "chromium-experimental-sampling-resource-table",
+          "chromium-experimental-timestamp-query-inside-passes",
+          "clip-distances",
+          "core-features-and-limits",
+          "depth-clip-control",
+          "depth32float-stencil8",
+          "float32-blendable",
+          "float32-filterable",
+          "indirect-first-instance",
+          "rg11b10ufloat-renderable",
+          "subgroup-size-control",
+          "subgroups",
+          "texture-component-swizzle",
+          "texture-compression-astc",
+          "texture-compression-astc-sliced-3d",
+          "texture-compression-bc",
+          "texture-compression-bc-sliced-3d",
+          "texture-compression-etc2",
+          "texture-compression-unaligned",
+          "timestamp-query"
+        ],
+        "limits": {
+          "maxComputeInvocationsPerWorkgroup": 256,
+          "maxComputeWorkgroupsPerDimension": 65535,
+          "maxStorageBufferBindingSize": 1073741824
+        },
+        "timestampQuery": true,
+        "vendor": "google"
+      },
+      "benchmarks": [
+        {
+          "invocations": 1024,
+          "protocol": "create2",
+          "variants": {
+            "baseline": {
+              "medianGpuMs": 2.564187,
+              "medianWallMs": 4.099999999976717,
+              "samples": [
+                {
+                  "gpuMs": 3.230468,
+                  "order": 0,
+                  "trial": 0,
+                  "wallMs": 4.299999999930151
+                },
+                {
+                  "gpuMs": 2.523998,
+                  "order": 1,
+                  "trial": 1,
+                  "wallMs": 2.800000000046566
+                },
+                {
+                  "gpuMs": 2.421911,
+                  "order": 0,
+                  "trial": 2,
+                  "wallMs": 3.900000000023283
+                },
+                {
+                  "gpuMs": 2.569166,
+                  "order": 1,
+                  "trial": 3,
+                  "wallMs": 4.200000000069849
+                },
+                {
+                  "gpuMs": 2.453768,
+                  "order": 0,
+                  "trial": 4,
+                  "wallMs": 2.799999999930151
+                },
+                {
+                  "gpuMs": 2.621035,
+                  "order": 1,
+                  "trial": 5,
+                  "wallMs": 4.199999999953434
+                },
+                {
+                  "gpuMs": 2.564187,
+                  "order": 0,
+                  "trial": 6,
+                  "wallMs": 4.099999999976717
+                }
+              ]
+            },
+            "current": {
+              "medianGpuMs": 2.621683,
+              "medianWallMs": 3.900000000023283,
+              "samples": [
+                {
+                  "gpuMs": 2.621683,
+                  "order": 1,
+                  "trial": 0,
+                  "wallMs": 3.900000000023283
+                },
+                {
+                  "gpuMs": 3.218412,
+                  "order": 0,
+                  "trial": 1,
+                  "wallMs": 3.900000000023283
+                },
+                {
+                  "gpuMs": 2.574367,
+                  "order": 1,
+                  "trial": 2,
+                  "wallMs": 3
+                },
+                {
+                  "gpuMs": 2.525342,
+                  "order": 0,
+                  "trial": 3,
+                  "wallMs": 2.900000000023283
+                },
+                {
+                  "gpuMs": 2.598156,
+                  "order": 1,
+                  "trial": 4,
+                  "wallMs": 4.200000000069849
+                },
+                {
+                  "gpuMs": 2.690843,
+                  "order": 0,
+                  "trial": 5,
+                  "wallMs": 4
+                },
+                {
+                  "gpuMs": 2.626495,
+                  "order": 1,
+                  "trial": 6,
+                  "wallMs": 3.900000000023283
+                }
+              ]
+            }
+          },
+          "workload": "create2"
+        }
+      ],
+      "compileMs": [
+        {
+          "entrypoint": "verify",
+          "ms": 10516.099999999977,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "verify",
+          "ms": 228,
+          "protocol": "create2",
+          "variant": "current"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 9987.199999999952,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 231.40000000002328,
+          "protocol": "create2",
+          "variant": "current"
+        }
+      ],
+      "correctness": {
+        "casesPerVariant": 4,
+        "count": 8,
+        "nonces": ["0x12345678fffffffe", "0x12345678ffffffff", "0x1234567900000000", "0x1234567900000001"],
+        "passed": true,
+        "workloads": ["create2"]
+      },
+      "environment": {
+        "coreSha256": {
+          "baseline": "a53d645e45548d1625edb534791ba875c924668543d2787e396329c8d17ae585",
+          "current": "efc213b9a405f3372580bd191644cab1509c256c6e7120ab10427e9623024025"
+        },
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+      },
+      "generatedAt": "2026-09-20T20:41:50.396Z",
+      "options": {
+        "dispatchX": 16,
+        "dispatchY": 1,
+        "experiment": {
+          "roundsPerIteration": 1,
+          "staticIO": true
+        },
+        "powerPreference": "high-performance",
+        "timestamps": true,
+        "trials": 7,
+        "variants": ["baseline", "current"],
+        "warmups": 2,
+        "workloads": ["create2"]
+      },
+      "page": "http://localhost:5174/",
+      "schemaVersion": 1
+    },
+    "worstSpeedup": 0.9780690495380258
+  },
+  {
+    "experiment": {
+      "roundsPerIteration": 2,
+      "staticIO": true
+    },
+    "geometricSpeedup": 0.8725428300557084,
+    "result": {
+      "adapter": {
+        "architecture": "swiftshader",
+        "description": "",
+        "device": "",
+        "features": [
+          "bgra8unorm-storage",
+          "chromium-experimental-sampling-resource-table",
+          "chromium-experimental-timestamp-query-inside-passes",
+          "clip-distances",
+          "core-features-and-limits",
+          "depth-clip-control",
+          "depth32float-stencil8",
+          "float32-blendable",
+          "float32-filterable",
+          "indirect-first-instance",
+          "rg11b10ufloat-renderable",
+          "subgroup-size-control",
+          "subgroups",
+          "texture-component-swizzle",
+          "texture-compression-astc",
+          "texture-compression-astc-sliced-3d",
+          "texture-compression-bc",
+          "texture-compression-bc-sliced-3d",
+          "texture-compression-etc2",
+          "texture-compression-unaligned",
+          "timestamp-query"
+        ],
+        "limits": {
+          "maxComputeInvocationsPerWorkgroup": 256,
+          "maxComputeWorkgroupsPerDimension": 65535,
+          "maxStorageBufferBindingSize": 1073741824
+        },
+        "timestampQuery": true,
+        "vendor": "google"
+      },
+      "benchmarks": [
+        {
+          "invocations": 1024,
+          "protocol": "create2",
+          "variants": {
+            "baseline": {
+              "medianGpuMs": 2.496003,
+              "medianWallMs": 2.900000000023283,
+              "samples": [
+                {
+                  "gpuMs": 2.458856,
+                  "order": 0,
+                  "trial": 0,
+                  "wallMs": 2.699999999953434
+                },
+                {
+                  "gpuMs": 2.533321,
+                  "order": 1,
+                  "trial": 1,
+                  "wallMs": 2.900000000023283
+                },
+                {
+                  "gpuMs": 2.403065,
+                  "order": 0,
+                  "trial": 2,
+                  "wallMs": 2.799999999930151
+                },
+                {
+                  "gpuMs": 3.735941,
+                  "order": 1,
+                  "trial": 3,
+                  "wallMs": 4.800000000046566
+                },
+                {
+                  "gpuMs": 3.414702,
+                  "order": 0,
+                  "trial": 4,
+                  "wallMs": 4.099999999976717
+                },
+                {
+                  "gpuMs": 2.496003,
+                  "order": 1,
+                  "trial": 5,
+                  "wallMs": 2.799999999930151
+                },
+                {
+                  "gpuMs": 2.415424,
+                  "order": 0,
+                  "trial": 6,
+                  "wallMs": 2.900000000023283
+                }
+              ]
+            },
+            "current": {
+              "medianGpuMs": 2.860608,
+              "medianWallMs": 4.199999999953434,
+              "samples": [
+                {
+                  "gpuMs": 2.860608,
+                  "order": 1,
+                  "trial": 0,
+                  "wallMs": 4.5
+                },
+                {
+                  "gpuMs": 2.793419,
+                  "order": 0,
+                  "trial": 1,
+                  "wallMs": 3.900000000023283
+                },
+                {
+                  "gpuMs": 2.995338,
+                  "order": 1,
+                  "trial": 2,
+                  "wallMs": 4.299999999930151
+                },
+                {
+                  "gpuMs": 3.596165,
+                  "order": 0,
+                  "trial": 3,
+                  "wallMs": 4
+                },
+                {
+                  "gpuMs": 2.87033,
+                  "order": 1,
+                  "trial": 4,
+                  "wallMs": 4.199999999953434
+                },
+                {
+                  "gpuMs": 2.054504,
+                  "order": 0,
+                  "trial": 5,
+                  "wallMs": 2.599999999976717
+                },
+                {
+                  "gpuMs": 2.809845,
+                  "order": 1,
+                  "trial": 6,
+                  "wallMs": 4.199999999953434
+                }
+              ]
+            }
+          },
+          "workload": "create2"
+        }
+      ],
+      "compileMs": [
+        {
+          "entrypoint": "verify",
+          "ms": 9726.400000000023,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "verify",
+          "ms": 312.69999999995343,
+          "protocol": "create2",
+          "variant": "current"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 9793,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 334.19999999995343,
+          "protocol": "create2",
+          "variant": "current"
+        }
+      ],
+      "correctness": {
+        "casesPerVariant": 4,
+        "count": 8,
+        "nonces": ["0x12345678fffffffe", "0x12345678ffffffff", "0x1234567900000000", "0x1234567900000001"],
+        "passed": true,
+        "workloads": ["create2"]
+      },
+      "environment": {
+        "coreSha256": {
+          "baseline": "a53d645e45548d1625edb534791ba875c924668543d2787e396329c8d17ae585",
+          "current": "220a30c8fb0755ef8bd220f4b8f1e3d87b8ad00a308399899da763ef8acbd614"
+        },
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+      },
+      "generatedAt": "2026-09-20T20:42:10.665Z",
+      "options": {
+        "dispatchX": 16,
+        "dispatchY": 1,
+        "experiment": {
+          "roundsPerIteration": 2,
+          "staticIO": true
+        },
+        "powerPreference": "high-performance",
+        "timestamps": true,
+        "trials": 7,
+        "variants": ["baseline", "current"],
+        "warmups": 2,
+        "workloads": ["create2"]
+      },
+      "page": "http://localhost:5174/",
+      "schemaVersion": 1
+    },
+    "worstSpeedup": 0.8725428300557084
+  },
+  {
+    "experiment": {
+      "roundsPerIteration": 4,
+      "staticIO": true
+    },
+    "geometricSpeedup": 0.8337753523348198,
+    "result": {
+      "adapter": {
+        "architecture": "swiftshader",
+        "description": "",
+        "device": "",
+        "features": [
+          "bgra8unorm-storage",
+          "chromium-experimental-sampling-resource-table",
+          "chromium-experimental-timestamp-query-inside-passes",
+          "clip-distances",
+          "core-features-and-limits",
+          "depth-clip-control",
+          "depth32float-stencil8",
+          "float32-blendable",
+          "float32-filterable",
+          "indirect-first-instance",
+          "rg11b10ufloat-renderable",
+          "subgroup-size-control",
+          "subgroups",
+          "texture-component-swizzle",
+          "texture-compression-astc",
+          "texture-compression-astc-sliced-3d",
+          "texture-compression-bc",
+          "texture-compression-bc-sliced-3d",
+          "texture-compression-etc2",
+          "texture-compression-unaligned",
+          "timestamp-query"
+        ],
+        "limits": {
+          "maxComputeInvocationsPerWorkgroup": 256,
+          "maxComputeWorkgroupsPerDimension": 65535,
+          "maxStorageBufferBindingSize": 1073741824
+        },
+        "timestampQuery": true,
+        "vendor": "google"
+      },
+      "benchmarks": [
+        {
+          "invocations": 1024,
+          "protocol": "create2",
+          "variants": {
+            "baseline": {
+              "medianGpuMs": 2.659038,
+              "medianWallMs": 4.199999999953434,
+              "samples": [
+                {
+                  "gpuMs": 2.659038,
+                  "order": 0,
+                  "trial": 0,
+                  "wallMs": 4.099999999976717
+                },
+                {
+                  "gpuMs": 2.608462,
+                  "order": 1,
+                  "trial": 1,
+                  "wallMs": 4.199999999953434
+                },
+                {
+                  "gpuMs": 2.67159,
+                  "order": 0,
+                  "trial": 2,
+                  "wallMs": 4.300000000046566
+                },
+                {
+                  "gpuMs": 3.226476,
+                  "order": 1,
+                  "trial": 3,
+                  "wallMs": 4.299999999930151
+                },
+                {
+                  "gpuMs": 2.372768,
+                  "order": 0,
+                  "trial": 4,
+                  "wallMs": 3.099999999976717
+                },
+                {
+                  "gpuMs": 6.223113,
+                  "order": 1,
+                  "trial": 5,
+                  "wallMs": 7.300000000046566
+                },
+                {
+                  "gpuMs": 2.032546,
+                  "order": 0,
+                  "trial": 6,
+                  "wallMs": 3
+                }
+              ]
+            },
+            "current": {
+              "medianGpuMs": 3.189154,
+              "medianWallMs": 4.300000000046566,
+              "samples": [
+                {
+                  "gpuMs": 2.924392,
+                  "order": 1,
+                  "trial": 0,
+                  "wallMs": 4.300000000046566
+                },
+                {
+                  "gpuMs": 2.846583,
+                  "order": 0,
+                  "trial": 1,
+                  "wallMs": 3.900000000023283
+                },
+                {
+                  "gpuMs": 3.189154,
+                  "order": 1,
+                  "trial": 2,
+                  "wallMs": 4.300000000046566
+                },
+                {
+                  "gpuMs": 3.260991,
+                  "order": 0,
+                  "trial": 3,
+                  "wallMs": 4
+                },
+                {
+                  "gpuMs": 7.152197,
+                  "order": 1,
+                  "trial": 4,
+                  "wallMs": 8.099999999976717
+                },
+                {
+                  "gpuMs": 14.085119,
+                  "order": 0,
+                  "trial": 5,
+                  "wallMs": 16.100000000093132
+                },
+                {
+                  "gpuMs": 2.343897,
+                  "order": 1,
+                  "trial": 6,
+                  "wallMs": 3
+                }
+              ]
+            }
+          },
+          "workload": "create2"
+        }
+      ],
+      "compileMs": [
+        {
+          "entrypoint": "verify",
+          "ms": 8918.800000000047,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "verify",
+          "ms": 624.1999999999534,
+          "protocol": "create2",
+          "variant": "current"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 9236,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 737.6999999999534,
+          "protocol": "create2",
+          "variant": "current"
+        }
+      ],
+      "correctness": {
+        "casesPerVariant": 4,
+        "count": 8,
+        "nonces": ["0x12345678fffffffe", "0x12345678ffffffff", "0x1234567900000000", "0x1234567900000001"],
+        "passed": true,
+        "workloads": ["create2"]
+      },
+      "environment": {
+        "coreSha256": {
+          "baseline": "a53d645e45548d1625edb534791ba875c924668543d2787e396329c8d17ae585",
+          "current": "ad44ee3d4940eac3ca64f20e92855d14423baf4eba32605465e00414768a6514"
+        },
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+      },
+      "generatedAt": "2026-09-20T20:42:30.318Z",
+      "options": {
+        "dispatchX": 16,
+        "dispatchY": 1,
+        "experiment": {
+          "roundsPerIteration": 4,
+          "staticIO": true
+        },
+        "powerPreference": "high-performance",
+        "timestamps": true,
+        "trials": 7,
+        "variants": ["baseline", "current"],
+        "warmups": 2,
+        "workloads": ["create2"]
+      },
+      "page": "http://localhost:5174/",
+      "schemaVersion": 1
+    },
+    "worstSpeedup": 0.8337753523348198
+  },
+  {
+    "experiment": {
+      "roundsPerIteration": 6,
+      "staticIO": true
+    },
+    "geometricSpeedup": 0.834381815640043,
+    "result": {
+      "adapter": {
+        "architecture": "swiftshader",
+        "description": "",
+        "device": "",
+        "features": [
+          "bgra8unorm-storage",
+          "chromium-experimental-sampling-resource-table",
+          "chromium-experimental-timestamp-query-inside-passes",
+          "clip-distances",
+          "core-features-and-limits",
+          "depth-clip-control",
+          "depth32float-stencil8",
+          "float32-blendable",
+          "float32-filterable",
+          "indirect-first-instance",
+          "rg11b10ufloat-renderable",
+          "subgroup-size-control",
+          "subgroups",
+          "texture-component-swizzle",
+          "texture-compression-astc",
+          "texture-compression-astc-sliced-3d",
+          "texture-compression-bc",
+          "texture-compression-bc-sliced-3d",
+          "texture-compression-etc2",
+          "texture-compression-unaligned",
+          "timestamp-query"
+        ],
+        "limits": {
+          "maxComputeInvocationsPerWorkgroup": 256,
+          "maxComputeWorkgroupsPerDimension": 65535,
+          "maxStorageBufferBindingSize": 1073741824
+        },
+        "timestampQuery": true,
+        "vendor": "google"
+      },
+      "benchmarks": [
+        {
+          "invocations": 1024,
+          "protocol": "create2",
+          "variants": {
+            "baseline": {
+              "medianGpuMs": 4.1302,
+              "medianWallMs": 5.699999999953434,
+              "samples": [
+                {
+                  "gpuMs": 3.714904,
+                  "order": 0,
+                  "trial": 0,
+                  "wallMs": 5.399999999906868
+                },
+                {
+                  "gpuMs": 4.136475,
+                  "order": 1,
+                  "trial": 1,
+                  "wallMs": 5.699999999953434
+                },
+                {
+                  "gpuMs": 4.1302,
+                  "order": 0,
+                  "trial": 2,
+                  "wallMs": 6.199999999953434
+                },
+                {
+                  "gpuMs": 4.791679,
+                  "order": 1,
+                  "trial": 3,
+                  "wallMs": 5.699999999953434
+                },
+                {
+                  "gpuMs": 5.706714,
+                  "order": 0,
+                  "trial": 4,
+                  "wallMs": 6.400000000023283
+                },
+                {
+                  "gpuMs": 4.128385,
+                  "order": 1,
+                  "trial": 5,
+                  "wallMs": 5.5
+                },
+                {
+                  "gpuMs": 2.473603,
+                  "order": 0,
+                  "trial": 6,
+                  "wallMs": 3.899999999906868
+                }
+              ]
+            },
+            "current": {
+              "medianGpuMs": 4.950012,
+              "medianWallMs": 5.799999999930151,
+              "samples": [
+                {
+                  "gpuMs": 3.897002,
+                  "order": 1,
+                  "trial": 0,
+                  "wallMs": 5.5
+                },
+                {
+                  "gpuMs": 4.72019,
+                  "order": 0,
+                  "trial": 1,
+                  "wallMs": 5.200000000069849
+                },
+                {
+                  "gpuMs": 4.950012,
+                  "order": 1,
+                  "trial": 2,
+                  "wallMs": 6.399999999906868
+                },
+                {
+                  "gpuMs": 4.955811,
+                  "order": 0,
+                  "trial": 3,
+                  "wallMs": 5.799999999930151
+                },
+                {
+                  "gpuMs": 11.82809,
+                  "order": 1,
+                  "trial": 4,
+                  "wallMs": 13.300000000046566
+                },
+                {
+                  "gpuMs": 6.140597,
+                  "order": 0,
+                  "trial": 5,
+                  "wallMs": 7.200000000069849
+                },
+                {
+                  "gpuMs": 3.120184,
+                  "order": 1,
+                  "trial": 6,
+                  "wallMs": 4
+                }
+              ]
+            }
+          },
+          "workload": "create2"
+        }
+      ],
+      "compileMs": [
+        {
+          "entrypoint": "verify",
+          "ms": 8576.599999999977,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "verify",
+          "ms": 865.5,
+          "protocol": "create2",
+          "variant": "current"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 9381.699999999952,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 947.4000000000232,
+          "protocol": "create2",
+          "variant": "current"
+        }
+      ],
+      "correctness": {
+        "casesPerVariant": 4,
+        "count": 8,
+        "nonces": ["0x12345678fffffffe", "0x12345678ffffffff", "0x1234567900000000", "0x1234567900000001"],
+        "passed": true,
+        "workloads": ["create2"]
+      },
+      "environment": {
+        "coreSha256": {
+          "baseline": "a53d645e45548d1625edb534791ba875c924668543d2787e396329c8d17ae585",
+          "current": "7f7ba7daa4978effc579bd96803f176d0d5a4ebd576a491449c97317a87aedaf"
+        },
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+      },
+      "generatedAt": "2026-09-20T20:42:50.252Z",
+      "options": {
+        "dispatchX": 16,
+        "dispatchY": 1,
+        "experiment": {
+          "roundsPerIteration": 6,
+          "staticIO": true
+        },
+        "powerPreference": "high-performance",
+        "timestamps": true,
+        "trials": 7,
+        "variants": ["baseline", "current"],
+        "warmups": 2,
+        "workloads": ["create2"]
+      },
+      "page": "http://localhost:5174/",
+      "schemaVersion": 1
+    },
+    "worstSpeedup": 0.834381815640043
+  },
+  {
+    "experiment": {
+      "roundsPerIteration": 8,
+      "staticIO": true
+    },
+    "geometricSpeedup": 0.8140971412711628,
+    "result": {
+      "adapter": {
+        "architecture": "swiftshader",
+        "description": "",
+        "device": "",
+        "features": [
+          "bgra8unorm-storage",
+          "chromium-experimental-sampling-resource-table",
+          "chromium-experimental-timestamp-query-inside-passes",
+          "clip-distances",
+          "core-features-and-limits",
+          "depth-clip-control",
+          "depth32float-stencil8",
+          "float32-blendable",
+          "float32-filterable",
+          "indirect-first-instance",
+          "rg11b10ufloat-renderable",
+          "subgroup-size-control",
+          "subgroups",
+          "texture-component-swizzle",
+          "texture-compression-astc",
+          "texture-compression-astc-sliced-3d",
+          "texture-compression-bc",
+          "texture-compression-bc-sliced-3d",
+          "texture-compression-etc2",
+          "texture-compression-unaligned",
+          "timestamp-query"
+        ],
+        "limits": {
+          "maxComputeInvocationsPerWorkgroup": 256,
+          "maxComputeWorkgroupsPerDimension": 65535,
+          "maxStorageBufferBindingSize": 1073741824
+        },
+        "timestampQuery": true,
+        "vendor": "google"
+      },
+      "benchmarks": [
+        {
+          "invocations": 1024,
+          "protocol": "create2",
+          "variants": {
+            "baseline": {
+              "medianGpuMs": 2.566543,
+              "medianWallMs": 4,
+              "samples": [
+                {
+                  "gpuMs": 2.370038,
+                  "order": 0,
+                  "trial": 0,
+                  "wallMs": 3
+                },
+                {
+                  "gpuMs": 2.566543,
+                  "order": 1,
+                  "trial": 1,
+                  "wallMs": 4
+                },
+                {
+                  "gpuMs": 2.499091,
+                  "order": 0,
+                  "trial": 2,
+                  "wallMs": 2.800000000046566
+                },
+                {
+                  "gpuMs": 2.550715,
+                  "order": 1,
+                  "trial": 3,
+                  "wallMs": 2.900000000023283
+                },
+                {
+                  "gpuMs": 2.784193,
+                  "order": 0,
+                  "trial": 4,
+                  "wallMs": 4.400000000023283
+                },
+                {
+                  "gpuMs": 2.732026,
+                  "order": 1,
+                  "trial": 5,
+                  "wallMs": 4
+                },
+                {
+                  "gpuMs": 2.670925,
+                  "order": 0,
+                  "trial": 6,
+                  "wallMs": 4.400000000023283
+                }
+              ]
+            },
+            "current": {
+              "medianGpuMs": 3.152625,
+              "medianWallMs": 4.200000000069849,
+              "samples": [
+                {
+                  "gpuMs": 3.152625,
+                  "order": 1,
+                  "trial": 0,
+                  "wallMs": 4.200000000069849
+                },
+                {
+                  "gpuMs": 3.151952,
+                  "order": 0,
+                  "trial": 1,
+                  "wallMs": 4.200000000069849
+                },
+                {
+                  "gpuMs": 3.085876,
+                  "order": 1,
+                  "trial": 2,
+                  "wallMs": 4.199999999953434
+                },
+                {
+                  "gpuMs": 3.122245,
+                  "order": 0,
+                  "trial": 3,
+                  "wallMs": 4
+                },
+                {
+                  "gpuMs": 3.996424,
+                  "order": 1,
+                  "trial": 4,
+                  "wallMs": 5.400000000023283
+                },
+                {
+                  "gpuMs": 3.44737,
+                  "order": 0,
+                  "trial": 5,
+                  "wallMs": 4.199999999953434
+                },
+                {
+                  "gpuMs": 3.692122,
+                  "order": 1,
+                  "trial": 6,
+                  "wallMs": 4.300000000046566
+                }
+              ]
+            }
+          },
+          "workload": "create2"
+        }
+      ],
+      "compileMs": [
+        {
+          "entrypoint": "verify",
+          "ms": 8486.199999999953,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "verify",
+          "ms": 1365.5,
+          "protocol": "create2",
+          "variant": "current"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 9829,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 1419,
+          "protocol": "create2",
+          "variant": "current"
+        }
+      ],
+      "correctness": {
+        "casesPerVariant": 4,
+        "count": 8,
+        "nonces": ["0x12345678fffffffe", "0x12345678ffffffff", "0x1234567900000000", "0x1234567900000001"],
+        "passed": true,
+        "workloads": ["create2"]
+      },
+      "environment": {
+        "coreSha256": {
+          "baseline": "a53d645e45548d1625edb534791ba875c924668543d2787e396329c8d17ae585",
+          "current": "f2372978ef39a224a59ce03282a4a377890b760a8bd80cc84294b21f00f05c18"
+        },
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+      },
+      "generatedAt": "2026-09-20T20:43:11.471Z",
+      "options": {
+        "dispatchX": 16,
+        "dispatchY": 1,
+        "experiment": {
+          "roundsPerIteration": 8,
+          "staticIO": true
+        },
+        "powerPreference": "high-performance",
+        "timestamps": true,
+        "trials": 7,
+        "variants": ["baseline", "current"],
+        "warmups": 2,
+        "workloads": ["create2"]
+      },
+      "page": "http://localhost:5174/",
+      "schemaVersion": 1
+    },
+    "worstSpeedup": 0.8140971412711628
+  },
+  {
+    "experiment": {
+      "roundsPerIteration": 12,
+      "staticIO": true
+    },
+    "geometricSpeedup": 0.9244718056952164,
+    "result": {
+      "adapter": {
+        "architecture": "swiftshader",
+        "description": "",
+        "device": "",
+        "features": [
+          "bgra8unorm-storage",
+          "chromium-experimental-sampling-resource-table",
+          "chromium-experimental-timestamp-query-inside-passes",
+          "clip-distances",
+          "core-features-and-limits",
+          "depth-clip-control",
+          "depth32float-stencil8",
+          "float32-blendable",
+          "float32-filterable",
+          "indirect-first-instance",
+          "rg11b10ufloat-renderable",
+          "subgroup-size-control",
+          "subgroups",
+          "texture-component-swizzle",
+          "texture-compression-astc",
+          "texture-compression-astc-sliced-3d",
+          "texture-compression-bc",
+          "texture-compression-bc-sliced-3d",
+          "texture-compression-etc2",
+          "texture-compression-unaligned",
+          "timestamp-query"
+        ],
+        "limits": {
+          "maxComputeInvocationsPerWorkgroup": 256,
+          "maxComputeWorkgroupsPerDimension": 65535,
+          "maxStorageBufferBindingSize": 1073741824
+        },
+        "timestampQuery": true,
+        "vendor": "google"
+      },
+      "benchmarks": [
+        {
+          "invocations": 1024,
+          "protocol": "create2",
+          "variants": {
+            "baseline": {
+              "medianGpuMs": 3.346477,
+              "medianWallMs": 3.699999999953434,
+              "samples": [
+                {
+                  "gpuMs": 2.444745,
+                  "order": 0,
+                  "trial": 0,
+                  "wallMs": 2.900000000023283
+                },
+                {
+                  "gpuMs": 2.483438,
+                  "order": 1,
+                  "trial": 1,
+                  "wallMs": 2.900000000023283
+                },
+                {
+                  "gpuMs": 2.36656,
+                  "order": 0,
+                  "trial": 2,
+                  "wallMs": 3
+                },
+                {
+                  "gpuMs": 3.383254,
+                  "order": 1,
+                  "trial": 3,
+                  "wallMs": 3.699999999953434
+                },
+                {
+                  "gpuMs": 3.346477,
+                  "order": 0,
+                  "trial": 4,
+                  "wallMs": 3.799999999930151
+                },
+                {
+                  "gpuMs": 4.482628,
+                  "order": 1,
+                  "trial": 5,
+                  "wallMs": 5.200000000069849
+                },
+                {
+                  "gpuMs": 3.513276,
+                  "order": 0,
+                  "trial": 6,
+                  "wallMs": 5.099999999976717
+                }
+              ]
+            },
+            "current": {
+              "medianGpuMs": 3.61988,
+              "medianWallMs": 4.200000000069849,
+              "samples": [
+                {
+                  "gpuMs": 3.42993,
+                  "order": 1,
+                  "trial": 0,
+                  "wallMs": 3.900000000023283
+                },
+                {
+                  "gpuMs": 3.358831,
+                  "order": 0,
+                  "trial": 1,
+                  "wallMs": 4.099999999976717
+                },
+                {
+                  "gpuMs": 3.61988,
+                  "order": 1,
+                  "trial": 2,
+                  "wallMs": 4.199999999953434
+                },
+                {
+                  "gpuMs": 3.447613,
+                  "order": 0,
+                  "trial": 3,
+                  "wallMs": 4.200000000069849
+                },
+                {
+                  "gpuMs": 4.754056,
+                  "order": 1,
+                  "trial": 4,
+                  "wallMs": 5.299999999930151
+                },
+                {
+                  "gpuMs": 4.653242,
+                  "order": 0,
+                  "trial": 5,
+                  "wallMs": 5.5
+                },
+                {
+                  "gpuMs": 5.090772,
+                  "order": 1,
+                  "trial": 6,
+                  "wallMs": 6.699999999953434
+                }
+              ]
+            }
+          },
+          "workload": "create2"
+        }
+      ],
+      "compileMs": [
+        {
+          "entrypoint": "verify",
+          "ms": 8870.099999999977,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "verify",
+          "ms": 2741.8000000000466,
+          "protocol": "create2",
+          "variant": "current"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 9696.70000000007,
+          "protocol": "create2",
+          "variant": "baseline"
+        },
+        {
+          "entrypoint": "production-main",
+          "ms": 2861.70000000007,
+          "protocol": "create2",
+          "variant": "current"
+        }
+      ],
+      "correctness": {
+        "casesPerVariant": 4,
+        "count": 8,
+        "nonces": ["0x12345678fffffffe", "0x12345678ffffffff", "0x1234567900000000", "0x1234567900000001"],
+        "passed": true,
+        "workloads": ["create2"]
+      },
+      "environment": {
+        "coreSha256": {
+          "baseline": "a53d645e45548d1625edb534791ba875c924668543d2787e396329c8d17ae585",
+          "current": "46a92dfe17149c2d38abab330c4bb61ba9f60f543443a5887e8e7bd3cd69fb5c"
+        },
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+      },
+      "generatedAt": "2026-09-20T20:43:35.768Z",
+      "options": {
+        "dispatchX": 16,
+        "dispatchY": 1,
+        "experiment": {
+          "roundsPerIteration": 12,
+          "staticIO": true
+        },
+        "powerPreference": "high-performance",
+        "timestamps": true,
+        "trials": 7,
+        "variants": ["baseline", "current"],
+        "warmups": 2,
+        "workloads": ["create2"]
+      },
+      "page": "http://localhost:5174/",
+      "schemaVersion": 1
+    },
+    "worstSpeedup": 0.9244718056952164
+  }
+]

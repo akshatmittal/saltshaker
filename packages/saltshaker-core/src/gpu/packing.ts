@@ -5,6 +5,14 @@ import { packBytesToWordsLE } from "../internal/words";
 const RESULT_WORDS = 8;
 const PATTERN_WORDS = 10;
 
+export function buildPipelineConstants(job: PreparedJob): Record<string, number> {
+  if (job.protocol !== "createx") return {};
+  return {
+    createx_guard_mode: job.guardMode,
+    createx_operation: job.createOperation === "create3" ? 1 : 0,
+  };
+}
+
 function buildMatcherWords(matcher: PreparedMatcher): Uint32Array {
   if (matcher.type === "leadingZeros") {
     return new Uint32Array([matcher.minZeroNibbles]);

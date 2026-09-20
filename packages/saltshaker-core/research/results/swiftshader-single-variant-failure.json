@@ -1,0 +1,9 @@
+{
+  "progress": "Compiling current-createx-verify",
+  "state": {
+    "error": "OperationError: Instance dropped in popErrorScope",
+    "status": "error"
+  },
+  "variants": ["current"],
+  "watchdogDisabled": true
+}

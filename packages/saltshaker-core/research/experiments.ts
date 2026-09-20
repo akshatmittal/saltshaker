@@ -2,17 +2,27 @@
 export interface Experiment {
   roundsPerIteration?: number;
   staticIO?: boolean;
+  implicitZeroInit?: boolean;
+  create2ZeroInit?: boolean;
 }
 
 export function experimentCore(source: string, experiment: Experiment = {}): string {
   let result = source;
-  if (experiment.staticIO) {
-    // WGSL function variables are zero-initialized. Eliminate redundant clearing
-    // and expose constant indices in fixed-size absorption/squeeze operations.
+  if (experiment.create2ZeroInit) {
+    result = result.replace(
+      /(fn keccak256_85_address[^\n]+\n    var state: array<xu64, 25>;\n)    for \(var i = 0u; i < 25u; i\+\+\) \{\n        state\[i\] = make_u64\(0u, 0u\);\n    \}\n/,
+      "$1",
+    );
+  }
+  if (experiment.staticIO || experiment.implicitZeroInit) {
+    // WGSL function variables are zero-initialized.
     result = result.replace(
       /    for \(var i = 0u; i < 25u; i\+\+\) \{\n        state\[i\] = make_u64\(0u, 0u\);\n    \}\n/g,
       "",
     );
+  }
+  if (experiment.staticIO) {
+    // Expose constant indices in fixed-size absorption/squeeze operations.
     result = result.replace(
       /    for \(var i = 0u; i < (\d+)u; i\+\+\) \{\n([^{}]+)    \}/g,
       (_, count: string, body: string) =>

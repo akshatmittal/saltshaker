@@ -2,7 +2,7 @@ import type { PreparedJob, PreparedMatcher, SessionConfig } from "../internal/ty
 
 import { adapterLabel, yieldToBrowser } from "../internal/gpu-browser";
 import { toGpuBufferSource } from "../internal/words";
-import { buildConstantsWords, createEmptyResultWords, RESULT_BUFFER_SIZE } from "./packing";
+import { buildConstantsWords, buildPipelineConstants, createEmptyResultWords, RESULT_BUFFER_SIZE } from "./packing";
 import { getMiningShader } from "./shaders";
 
 export interface GpuResources {
@@ -55,7 +55,7 @@ export async function initializeGpuResources(
   await reportStatus(options, "Compiling Compute Shader");
   const pipeline = await device.createComputePipelineAsync({
     layout: "auto",
-    compute: { module, entryPoint: "main" },
+    compute: { module, entryPoint: "main", constants: buildPipelineConstants(job) },
   });
 
   await reportStatus(options, "Allocating GPU Buffers");

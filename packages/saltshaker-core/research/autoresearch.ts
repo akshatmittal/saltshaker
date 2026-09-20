@@ -14,6 +14,8 @@ interface Attempt {
 export async function runAutoresearch(
   options: Omit<ResearchOptions, "experiment" | "variants"> = {},
   experiments: Experiment[] = [
+    { create2ZeroInit: true },
+    { implicitZeroInit: true },
     { staticIO: true },
     ...[1, 2, 4, 6, 8, 12].map((roundsPerIteration) => ({ roundsPerIteration, staticIO: true })),
   ],

@@ -1,0 +1,661 @@
+{
+  "result": {
+    "adapter": {
+      "architecture": "swiftshader",
+      "description": "",
+      "device": "",
+      "features": [
+        "bgra8unorm-storage",
+        "chromium-experimental-sampling-resource-table",
+        "chromium-experimental-timestamp-query-inside-passes",
+        "clip-distances",
+        "core-features-and-limits",
+        "depth-clip-control",
+        "depth32float-stencil8",
+        "float32-blendable",
+        "float32-filterable",
+        "indirect-first-instance",
+        "rg11b10ufloat-renderable",
+        "subgroup-size-control",
+        "subgroups",
+        "texture-component-swizzle",
+        "texture-compression-astc",
+        "texture-compression-astc-sliced-3d",
+        "texture-compression-bc",
+        "texture-compression-bc-sliced-3d",
+        "texture-compression-etc2",
+        "texture-compression-unaligned",
+        "timestamp-query"
+      ],
+      "limits": {
+        "maxComputeInvocationsPerWorkgroup": 256,
+        "maxComputeWorkgroupsPerDimension": 65535,
+        "maxStorageBufferBindingSize": 1073741824
+      },
+      "timestampQuery": true,
+      "vendor": "google"
+    },
+    "benchmarks": [
+      {
+        "invocations": 8192,
+        "protocol": "create2",
+        "variants": {
+          "baseline": {
+            "medianGpuMs": 13.886337,
+            "medianWallMs": 14.699999999953434,
+            "samples": [
+              {
+                "gpuMs": 18.962624,
+                "order": 0,
+                "trial": 0,
+                "wallMs": 20
+              },
+              {
+                "gpuMs": 19.166398,
+                "order": 1,
+                "trial": 1,
+                "wallMs": 20.399999999906868
+              },
+              {
+                "gpuMs": 19.335085,
+                "order": 0,
+                "trial": 2,
+                "wallMs": 20.80000000004657
+              },
+              {
+                "gpuMs": 18.544213,
+                "order": 1,
+                "trial": 3,
+                "wallMs": 19.19999999995343
+              },
+              {
+                "gpuMs": 20.870488,
+                "order": 0,
+                "trial": 4,
+                "wallMs": 21.600000000093132
+              },
+              {
+                "gpuMs": 16.088809,
+                "order": 1,
+                "trial": 5,
+                "wallMs": 17.700000000186265
+              },
+              {
+                "gpuMs": 13.472701,
+                "order": 0,
+                "trial": 6,
+                "wallMs": 14.899999999906868
+              },
+              {
+                "gpuMs": 14.052318,
+                "order": 1,
+                "trial": 7,
+                "wallMs": 15.5
+              },
+              {
+                "gpuMs": 13.337366,
+                "order": 0,
+                "trial": 8,
+                "wallMs": 14.5
+              },
+              {
+                "gpuMs": 13.075923,
+                "order": 1,
+                "trial": 9,
+                "wallMs": 14.699999999953434
+              },
+              {
+                "gpuMs": 13.076974,
+                "order": 0,
+                "trial": 10,
+                "wallMs": 14
+              },
+              {
+                "gpuMs": 13.886337,
+                "order": 1,
+                "trial": 11,
+                "wallMs": 14.399999999906868
+              },
+              {
+                "gpuMs": 14.449209,
+                "order": 0,
+                "trial": 12,
+                "wallMs": 14.699999999953434
+              },
+              {
+                "gpuMs": 13.322229,
+                "order": 1,
+                "trial": 13,
+                "wallMs": 14.300000000046566
+              },
+              {
+                "gpuMs": 12.867024,
+                "order": 0,
+                "trial": 14,
+                "wallMs": 13.899999999906868
+              },
+              {
+                "gpuMs": 13.065152,
+                "order": 1,
+                "trial": 15,
+                "wallMs": 13.700000000186265
+              },
+              {
+                "gpuMs": 13.178687,
+                "order": 0,
+                "trial": 16,
+                "wallMs": 14.099999999860302
+              },
+              {
+                "gpuMs": 15.531991,
+                "order": 1,
+                "trial": 17,
+                "wallMs": 16.5
+              },
+              {
+                "gpuMs": 13.063729,
+                "order": 0,
+                "trial": 18,
+                "wallMs": 14.599999999860302
+              },
+              {
+                "gpuMs": 12.928657,
+                "order": 1,
+                "trial": 19,
+                "wallMs": 13.699999999953434
+              },
+              {
+                "gpuMs": 15.834929,
+                "order": 0,
+                "trial": 20,
+                "wallMs": 17.399999999906868
+              }
+            ]
+          },
+          "current": {
+            "medianGpuMs": 12.714517,
+            "medianWallMs": 13.900000000139698,
+            "samples": [
+              {
+                "gpuMs": 17.990482,
+                "order": 1,
+                "trial": 0,
+                "wallMs": 18.5
+              },
+              {
+                "gpuMs": 14.855609,
+                "order": 0,
+                "trial": 1,
+                "wallMs": 15.600000000093132
+              },
+              {
+                "gpuMs": 18.269978,
+                "order": 1,
+                "trial": 2,
+                "wallMs": 18.9000000001397
+              },
+              {
+                "gpuMs": 17.803045,
+                "order": 0,
+                "trial": 3,
+                "wallMs": 18.69999999995343
+              },
+              {
+                "gpuMs": 95.435787,
+                "order": 1,
+                "trial": 4,
+                "wallMs": 96.10000000009312
+              },
+              {
+                "gpuMs": 12.330868,
+                "order": 0,
+                "trial": 5,
+                "wallMs": 13.900000000139698
+              },
+              {
+                "gpuMs": 12.363152,
+                "order": 1,
+                "trial": 6,
+                "wallMs": 13.100000000093132
+              },
+              {
+                "gpuMs": 19.395901,
+                "order": 0,
+                "trial": 7,
+                "wallMs": 20.600000000093132
+              },
+              {
+                "gpuMs": 12.339859,
+                "order": 1,
+                "trial": 8,
+                "wallMs": 13.300000000046566
+              },
+              {
+                "gpuMs": 12.317384,
+                "order": 0,
+                "trial": 9,
+                "wallMs": 13.199999999953434
+              },
+              {
+                "gpuMs": 12.714517,
+                "order": 1,
+                "trial": 10,
+                "wallMs": 13.400000000139698
+              },
+              {
+                "gpuMs": 12.352935,
+                "order": 0,
+                "trial": 11,
+                "wallMs": 13.399999999906868
+              },
+              {
+                "gpuMs": 12.248632,
+                "order": 1,
+                "trial": 12,
+                "wallMs": 13.199999999953434
+              },
+              {
+                "gpuMs": 12.222655,
+                "order": 0,
+                "trial": 13,
+                "wallMs": 13.399999999906868
+              },
+              {
+                "gpuMs": 14.610152,
+                "order": 1,
+                "trial": 14,
+                "wallMs": 15.899999999906868
+              },
+              {
+                "gpuMs": 12.041827,
+                "order": 0,
+                "trial": 15,
+                "wallMs": 12.900000000139698
+              },
+              {
+                "gpuMs": 12.359886,
+                "order": 1,
+                "trial": 16,
+                "wallMs": 13.100000000093132
+              },
+              {
+                "gpuMs": 13.696895,
+                "order": 0,
+                "trial": 17,
+                "wallMs": 15.100000000093132
+              },
+              {
+                "gpuMs": 14.519275,
+                "order": 1,
+                "trial": 18,
+                "wallMs": 16
+              },
+              {
+                "gpuMs": 12.388331,
+                "order": 0,
+                "trial": 19,
+                "wallMs": 13
+              },
+              {
+                "gpuMs": 13.26559,
+                "order": 1,
+                "trial": 20,
+                "wallMs": 14.300000000046566
+              }
+            ]
+          }
+        },
+        "workload": "create2"
+      },
+      {
+        "invocations": 8192,
+        "protocol": "safe",
+        "variants": {
+          "baseline": {
+            "medianGpuMs": 31.88197,
+            "medianWallMs": 33.300000000046566,
+            "samples": [
+              {
+                "gpuMs": 57.854727,
+                "order": 0,
+                "trial": 0,
+                "wallMs": 59.800000000046566
+              },
+              {
+                "gpuMs": 135.467835,
+                "order": 1,
+                "trial": 1,
+                "wallMs": 136.89999999990687
+              },
+              {
+                "gpuMs": 166.771107,
+                "order": 0,
+                "trial": 2,
+                "wallMs": 168.79999999981374
+              },
+              {
+                "gpuMs": 35.149075,
+                "order": 1,
+                "trial": 3,
+                "wallMs": 36.0999999998603
+              },
+              {
+                "gpuMs": 37.201988,
+                "order": 0,
+                "trial": 4,
+                "wallMs": 37.60000000009313
+              },
+              {
+                "gpuMs": 34.942813,
+                "order": 1,
+                "trial": 5,
+                "wallMs": 36.10000000009313
+              },
+              {
+                "gpuMs": 31.514992,
+                "order": 0,
+                "trial": 6,
+                "wallMs": 32.199999999953434
+              },
+              {
+                "gpuMs": 31.87156,
+                "order": 1,
+                "trial": 7,
+                "wallMs": 33.199999999953434
+              },
+              {
+                "gpuMs": 31.582188,
+                "order": 0,
+                "trial": 8,
+                "wallMs": 32.699999999953434
+              },
+              {
+                "gpuMs": 30.614563,
+                "order": 1,
+                "trial": 9,
+                "wallMs": 32.299999999813735
+              },
+              {
+                "gpuMs": 30.433713,
+                "order": 0,
+                "trial": 10,
+                "wallMs": 31.30000000004657
+              },
+              {
+                "gpuMs": 30.681022,
+                "order": 1,
+                "trial": 11,
+                "wallMs": 31.30000000004657
+              },
+              {
+                "gpuMs": 30.247139,
+                "order": 0,
+                "trial": 12,
+                "wallMs": 31.30000000004657
+              },
+              {
+                "gpuMs": 31.88197,
+                "order": 1,
+                "trial": 13,
+                "wallMs": 33.4000000001397
+              },
+              {
+                "gpuMs": 32.563996,
+                "order": 0,
+                "trial": 14,
+                "wallMs": 33.799999999813735
+              },
+              {
+                "gpuMs": 32.50428,
+                "order": 1,
+                "trial": 15,
+                "wallMs": 33.699999999953434
+              },
+              {
+                "gpuMs": 31.560194,
+                "order": 0,
+                "trial": 16,
+                "wallMs": 32.200000000186265
+              },
+              {
+                "gpuMs": 32.528748,
+                "order": 1,
+                "trial": 17,
+                "wallMs": 33.299999999813735
+              },
+              {
+                "gpuMs": 31.639632,
+                "order": 0,
+                "trial": 18,
+                "wallMs": 33.299999999813735
+              },
+              {
+                "gpuMs": 31.616303,
+                "order": 1,
+                "trial": 19,
+                "wallMs": 33.300000000046566
+              },
+              {
+                "gpuMs": 33.566836,
+                "order": 0,
+                "trial": 20,
+                "wallMs": 34.60000000009313
+              }
+            ]
+          },
+          "current": {
+            "medianGpuMs": 32.925327,
+            "medianWallMs": 34,
+            "samples": [
+              {
+                "gpuMs": 43.876237,
+                "order": 1,
+                "trial": 0,
+                "wallMs": 44.9000000001397
+              },
+              {
+                "gpuMs": 62.57255,
+                "order": 0,
+                "trial": 1,
+                "wallMs": 63.5
+              },
+              {
+                "gpuMs": 33.202356,
+                "order": 1,
+                "trial": 2,
+                "wallMs": 34.0999999998603
+              },
+              {
+                "gpuMs": 36.00301,
+                "order": 0,
+                "trial": 3,
+                "wallMs": 37.199999999953434
+              },
+              {
+                "gpuMs": 32.925327,
+                "order": 1,
+                "trial": 4,
+                "wallMs": 33.60000000009313
+              },
+              {
+                "gpuMs": 33.373882,
+                "order": 0,
+                "trial": 5,
+                "wallMs": 34.5999999998603
+              },
+              {
+                "gpuMs": 32.384894,
+                "order": 1,
+                "trial": 6,
+                "wallMs": 32.89999999990687
+              },
+              {
+                "gpuMs": 32.549467,
+                "order": 0,
+                "trial": 7,
+                "wallMs": 34
+              },
+              {
+                "gpuMs": 33.201851,
+                "order": 1,
+                "trial": 8,
+                "wallMs": 34.699999999953434
+              },
+              {
+                "gpuMs": 31.516111,
+                "order": 0,
+                "trial": 9,
+                "wallMs": 32
+              },
+              {
+                "gpuMs": 34.408837,
+                "order": 1,
+                "trial": 10,
+                "wallMs": 35.800000000046566
+              },
+              {
+                "gpuMs": 31.204072,
+                "order": 0,
+                "trial": 11,
+                "wallMs": 32
+              },
+              {
+                "gpuMs": 33.237764,
+                "order": 1,
+                "trial": 12,
+                "wallMs": 34
+              },
+              {
+                "gpuMs": 32.861567,
+                "order": 0,
+                "trial": 13,
+                "wallMs": 34
+              },
+              {
+                "gpuMs": 31.614495,
+                "order": 1,
+                "trial": 14,
+                "wallMs": 32.39999999990687
+              },
+              {
+                "gpuMs": 32.48483,
+                "order": 0,
+                "trial": 15,
+                "wallMs": 33.700000000186265
+              },
+              {
+                "gpuMs": 34.557004,
+                "order": 1,
+                "trial": 16,
+                "wallMs": 35.10000000009313
+              },
+              {
+                "gpuMs": 33.503352,
+                "order": 0,
+                "trial": 17,
+                "wallMs": 34.700000000186265
+              },
+              {
+                "gpuMs": 32.781443,
+                "order": 1,
+                "trial": 18,
+                "wallMs": 33.800000000046566
+              },
+              {
+                "gpuMs": 31.521069,
+                "order": 0,
+                "trial": 19,
+                "wallMs": 32.799999999813735
+              },
+              {
+                "gpuMs": 32.887943,
+                "order": 1,
+                "trial": 20,
+                "wallMs": 34.4000000001397
+              }
+            ]
+          }
+        },
+        "workload": "safe"
+      }
+    ],
+    "compileMs": [
+      {
+        "entrypoint": "verify",
+        "ms": 8024.200000000186,
+        "protocol": "create2",
+        "variant": "baseline"
+      },
+      {
+        "entrypoint": "verify",
+        "ms": 19047.5,
+        "protocol": "safe",
+        "variant": "baseline"
+      },
+      {
+        "entrypoint": "verify",
+        "ms": 10015.199999999952,
+        "protocol": "create2",
+        "variant": "current"
+      },
+      {
+        "entrypoint": "verify",
+        "ms": 28902.799999999817,
+        "protocol": "safe",
+        "variant": "current"
+      },
+      {
+        "entrypoint": "production-main",
+        "ms": 11558.399999999909,
+        "protocol": "create2",
+        "variant": "baseline"
+      },
+      {
+        "entrypoint": "production-main",
+        "ms": 9631.100000000091,
+        "protocol": "create2",
+        "variant": "current"
+      },
+      {
+        "entrypoint": "production-main",
+        "ms": 17547.800000000047,
+        "protocol": "safe",
+        "variant": "baseline"
+      },
+      {
+        "entrypoint": "production-main",
+        "ms": 34871.40000000014,
+        "protocol": "safe",
+        "variant": "current"
+      }
+    ],
+    "correctness": {
+      "casesPerVariant": 8,
+      "count": 16,
+      "nonces": ["0x12345678fffffffe", "0x12345678ffffffff", "0x1234567900000000", "0x1234567900000001"],
+      "passed": true,
+      "workloads": ["create2", "safe"]
+    },
+    "environment": {
+      "coreSha256": {
+        "baseline": "a53d645e45548d1625edb534791ba875c924668543d2787e396329c8d17ae585",
+        "current": "e60d964d9d2ce4de24884f7fab811057bc4fa04694333431e67ed4b7e4f2292b"
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "generatedAt": "2026-09-20T20:46:54.341Z",
+    "options": {
+      "dispatchX": 128,
+      "dispatchY": 1,
+      "powerPreference": "high-performance",
+      "timestamps": true,
+      "trials": 21,
+      "variants": ["baseline", "current"],
+      "warmups": 5,
+      "workloads": ["create2", "safe"]
+    },
+    "page": "http://localhost:5174/",
+    "schemaVersion": 1
+  },
+  "status": "done"
+}

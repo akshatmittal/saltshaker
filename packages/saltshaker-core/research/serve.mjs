@@ -10,6 +10,10 @@ const { createServer } = await import(pathToFileURL(viteEntry).href);
 const server = await createServer({
   root,
   server: {
+    host: "0.0.0.0",
+    port: 5173,
+    strictPort: true,
+    allowedHosts: [".onamp.dev"],
     // An edit must not cancel a long shader compilation or parameter sweep.
     hmr: false,
     fs: {

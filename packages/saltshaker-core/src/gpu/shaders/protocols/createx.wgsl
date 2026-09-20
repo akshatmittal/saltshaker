@@ -7,13 +7,11 @@ struct ProtocolData {
     flags: u32,
 }
 
-fn createx_guard_mode(protocol: ProtocolData) -> u32 {
-    return protocol.flags >> 8u;
-}
-
-fn createx_operation(protocol: ProtocolData) -> u32 {
-    return protocol.flags & 0xffu;
-}
+// These choices are fixed for the session. Specializing the pipeline lets the
+// backend discard unused hash paths instead of allocating registers for all of
+// them. Keep flags above to preserve the packed storage-buffer layout.
+override createx_guard_mode: u32;
+override createx_operation: u32;
 
 fn createx_guarded_salt(protocol: ProtocolData, nonce: xu64) -> array<u32, 8> {
     var salt: array<u32, 8>;
@@ -23,7 +21,7 @@ fn createx_guarded_salt(protocol: ProtocolData, nonce: xu64) -> array<u32, 8> {
     salt[6] = swap_endian(nonce.y);
     salt[7] = swap_endian(nonce.x);
 
-    let guard_mode = createx_guard_mode(protocol);
+    let guard_mode = createx_guard_mode;
     if (guard_mode == 0u) {
         return keccak256_32(salt);
     }
@@ -68,7 +66,7 @@ fn createx_guarded_salt(protocol: ProtocolData, nonce: xu64) -> array<u32, 8> {
 
 fn protocol_address(protocol: ProtocolData, nonce: xu64) -> array<u32, 5> {
     let guarded_salt = createx_guarded_salt(protocol, nonce);
-    if (createx_operation(protocol) == 0u) {
+    if (createx_operation == 0u) {
         return keccak256_85_address(protocol.factory, guarded_salt, protocol.code_hash);
     }
 

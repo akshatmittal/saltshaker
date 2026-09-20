@@ -1,0 +1,666 @@
+{
+  "result": {
+    "adapter": {
+      "architecture": "swiftshader",
+      "description": "",
+      "device": "",
+      "features": [
+        "bgra8unorm-storage",
+        "chromium-experimental-sampling-resource-table",
+        "chromium-experimental-timestamp-query-inside-passes",
+        "clip-distances",
+        "core-features-and-limits",
+        "depth-clip-control",
+        "depth32float-stencil8",
+        "float32-blendable",
+        "float32-filterable",
+        "indirect-first-instance",
+        "rg11b10ufloat-renderable",
+        "subgroup-size-control",
+        "subgroups",
+        "texture-component-swizzle",
+        "texture-compression-astc",
+        "texture-compression-astc-sliced-3d",
+        "texture-compression-bc",
+        "texture-compression-bc-sliced-3d",
+        "texture-compression-etc2",
+        "texture-compression-unaligned",
+        "timestamp-query"
+      ],
+      "limits": {
+        "maxComputeInvocationsPerWorkgroup": 256,
+        "maxComputeWorkgroupsPerDimension": 65535,
+        "maxStorageBufferBindingSize": 1073741824
+      },
+      "timestampQuery": true,
+      "vendor": "google"
+    },
+    "benchmarks": [
+      {
+        "invocations": 1024,
+        "protocol": "create2",
+        "variants": {
+          "current": {
+            "medianGpuMs": 2.277874,
+            "medianWallMs": 3,
+            "samples": [
+              {
+                "gpuMs": 2.245452,
+                "order": 0,
+                "trial": 0,
+                "wallMs": 2.9000000001396984
+              },
+              {
+                "gpuMs": 2.277874,
+                "order": 0,
+                "trial": 1,
+                "wallMs": 3
+              },
+              {
+                "gpuMs": 2.234219,
+                "order": 0,
+                "trial": 2,
+                "wallMs": 3
+              },
+              {
+                "gpuMs": 2.295628,
+                "order": 0,
+                "trial": 3,
+                "wallMs": 2.8999999999068677
+              },
+              {
+                "gpuMs": 2.297702,
+                "order": 0,
+                "trial": 4,
+                "wallMs": 3
+              },
+              {
+                "gpuMs": 2.271895,
+                "order": 0,
+                "trial": 5,
+                "wallMs": 3
+              },
+              {
+                "gpuMs": 2.278171,
+                "order": 0,
+                "trial": 6,
+                "wallMs": 2.800000000046566
+              }
+            ]
+          }
+        },
+        "workload": "create2"
+      },
+      {
+        "invocations": 1024,
+        "protocol": "safe",
+        "variants": {
+          "current": {
+            "medianGpuMs": 6.791627,
+            "medianWallMs": 8.100000000093132,
+            "samples": [
+              {
+                "gpuMs": 6.574075,
+                "order": 0,
+                "trial": 0,
+                "wallMs": 8.100000000093132
+              },
+              {
+                "gpuMs": 6.558128,
+                "order": 0,
+                "trial": 1,
+                "wallMs": 8
+              },
+              {
+                "gpuMs": 6.619757,
+                "order": 0,
+                "trial": 2,
+                "wallMs": 8
+              },
+              {
+                "gpuMs": 6.967708,
+                "order": 0,
+                "trial": 3,
+                "wallMs": 8.399999999906868
+              },
+              {
+                "gpuMs": 6.791627,
+                "order": 0,
+                "trial": 4,
+                "wallMs": 8.300000000046566
+              },
+              {
+                "gpuMs": 6.799558,
+                "order": 0,
+                "trial": 5,
+                "wallMs": 8
+              },
+              {
+                "gpuMs": 7.092234,
+                "order": 0,
+                "trial": 6,
+                "wallMs": 8.199999999953434
+              }
+            ]
+          }
+        },
+        "workload": "safe"
+      },
+      {
+        "invocations": 1024,
+        "protocol": "createx",
+        "variants": {
+          "current": {
+            "medianGpuMs": 49.974843,
+            "medianWallMs": 50.800000000046566,
+            "samples": [
+              {
+                "gpuMs": 49.194825,
+                "order": 0,
+                "trial": 0,
+                "wallMs": 50
+              },
+              {
+                "gpuMs": 50.820942,
+                "order": 0,
+                "trial": 1,
+                "wallMs": 52.5
+              },
+              {
+                "gpuMs": 49.048697,
+                "order": 0,
+                "trial": 2,
+                "wallMs": 49.699999999953434
+              },
+              {
+                "gpuMs": 48.623779,
+                "order": 0,
+                "trial": 3,
+                "wallMs": 49.9000000001397
+              },
+              {
+                "gpuMs": 50.026276,
+                "order": 0,
+                "trial": 4,
+                "wallMs": 50.800000000046566
+              },
+              {
+                "gpuMs": 54.294416,
+                "order": 0,
+                "trial": 5,
+                "wallMs": 55.5
+              },
+              {
+                "gpuMs": 49.974843,
+                "order": 0,
+                "trial": 6,
+                "wallMs": 51.300000000046566
+              }
+            ]
+          }
+        },
+        "workload": "createx-create2-guard0"
+      },
+      {
+        "invocations": 1024,
+        "protocol": "createx",
+        "variants": {
+          "current": {
+            "medianGpuMs": 48.185486,
+            "medianWallMs": 48.5999999998603,
+            "samples": [
+              {
+                "gpuMs": 48.682762,
+                "order": 0,
+                "trial": 0,
+                "wallMs": 49.300000000046566
+              },
+              {
+                "gpuMs": 48.264547,
+                "order": 0,
+                "trial": 1,
+                "wallMs": 49.39999999990687
+              },
+              {
+                "gpuMs": 47.072389,
+                "order": 0,
+                "trial": 2,
+                "wallMs": 47.699999999953434
+              },
+              {
+                "gpuMs": 50.515443,
+                "order": 0,
+                "trial": 3,
+                "wallMs": 51.89999999990687
+              },
+              {
+                "gpuMs": 48.185486,
+                "order": 0,
+                "trial": 4,
+                "wallMs": 48.5999999998603
+              },
+              {
+                "gpuMs": 47.636584,
+                "order": 0,
+                "trial": 5,
+                "wallMs": 48.5
+              },
+              {
+                "gpuMs": 45.530138,
+                "order": 0,
+                "trial": 6,
+                "wallMs": 46.9000000001397
+              }
+            ]
+          }
+        },
+        "workload": "createx-create3-guard0"
+      },
+      {
+        "invocations": 1024,
+        "protocol": "createx",
+        "variants": {
+          "current": {
+            "medianGpuMs": 47.154816,
+            "medianWallMs": 48.10000000009313,
+            "samples": [
+              {
+                "gpuMs": 49.815717,
+                "order": 0,
+                "trial": 0,
+                "wallMs": 51.199999999953434
+              },
+              {
+                "gpuMs": 43.626781,
+                "order": 0,
+                "trial": 1,
+                "wallMs": 44.199999999953434
+              },
+              {
+                "gpuMs": 49.375975,
+                "order": 0,
+                "trial": 2,
+                "wallMs": 50.300000000046566
+              },
+              {
+                "gpuMs": 47.154816,
+                "order": 0,
+                "trial": 3,
+                "wallMs": 48.10000000009313
+              },
+              {
+                "gpuMs": 40.886339,
+                "order": 0,
+                "trial": 4,
+                "wallMs": 42.10000000009313
+              },
+              {
+                "gpuMs": 40.828158,
+                "order": 0,
+                "trial": 5,
+                "wallMs": 41.89999999990687
+              },
+              {
+                "gpuMs": 47.503085,
+                "order": 0,
+                "trial": 6,
+                "wallMs": 48.300000000046566
+              }
+            ]
+          }
+        },
+        "workload": "createx-create2-guard1"
+      },
+      {
+        "invocations": 1024,
+        "protocol": "createx",
+        "variants": {
+          "current": {
+            "medianGpuMs": 49.857223,
+            "medianWallMs": 50.5999999998603,
+            "samples": [
+              {
+                "gpuMs": 50.93185,
+                "order": 0,
+                "trial": 0,
+                "wallMs": 51.700000000186265
+              },
+              {
+                "gpuMs": 58.81743,
+                "order": 0,
+                "trial": 1,
+                "wallMs": 61.299999999813735
+              },
+              {
+                "gpuMs": 49.857223,
+                "order": 0,
+                "trial": 2,
+                "wallMs": 50.5999999998603
+              },
+              {
+                "gpuMs": 43.216963,
+                "order": 0,
+                "trial": 3,
+                "wallMs": 44.0999999998603
+              },
+              {
+                "gpuMs": 43.502631,
+                "order": 0,
+                "trial": 4,
+                "wallMs": 44.5999999998603
+              },
+              {
+                "gpuMs": 43.236307,
+                "order": 0,
+                "trial": 5,
+                "wallMs": 44
+              },
+              {
+                "gpuMs": 50.714075,
+                "order": 0,
+                "trial": 6,
+                "wallMs": 52
+              }
+            ]
+          }
+        },
+        "workload": "createx-create3-guard1"
+      },
+      {
+        "invocations": 1024,
+        "protocol": "createx",
+        "variants": {
+          "current": {
+            "medianGpuMs": 49.308657,
+            "medianWallMs": 50.39999999990687,
+            "samples": [
+              {
+                "gpuMs": 50.771355,
+                "order": 0,
+                "trial": 0,
+                "wallMs": 51.60000000009313
+              },
+              {
+                "gpuMs": 42.159743,
+                "order": 0,
+                "trial": 1,
+                "wallMs": 43.5
+              },
+              {
+                "gpuMs": 50.289182,
+                "order": 0,
+                "trial": 2,
+                "wallMs": 50.699999999953434
+              },
+              {
+                "gpuMs": 49.308657,
+                "order": 0,
+                "trial": 3,
+                "wallMs": 50.39999999990687
+              },
+              {
+                "gpuMs": 47.088137,
+                "order": 0,
+                "trial": 4,
+                "wallMs": 47.5999999998603
+              },
+              {
+                "gpuMs": 51.371778,
+                "order": 0,
+                "trial": 5,
+                "wallMs": 52.699999999953434
+              },
+              {
+                "gpuMs": 48.924143,
+                "order": 0,
+                "trial": 6,
+                "wallMs": 49.39999999990687
+              }
+            ]
+          }
+        },
+        "workload": "createx-create2-guard2"
+      },
+      {
+        "invocations": 1024,
+        "protocol": "createx",
+        "variants": {
+          "current": {
+            "medianGpuMs": 53.476219,
+            "medianWallMs": 54.89999999990687,
+            "samples": [
+              {
+                "gpuMs": 47.457941,
+                "order": 0,
+                "trial": 0,
+                "wallMs": 48.60000000009313
+              },
+              {
+                "gpuMs": 50.983545,
+                "order": 0,
+                "trial": 1,
+                "wallMs": 52.39999999990687
+              },
+              {
+                "gpuMs": 49.63545,
+                "order": 0,
+                "trial": 2,
+                "wallMs": 51.199999999953434
+              },
+              {
+                "gpuMs": 53.476219,
+                "order": 0,
+                "trial": 3,
+                "wallMs": 54.89999999990687
+              },
+              {
+                "gpuMs": 59.529166,
+                "order": 0,
+                "trial": 4,
+                "wallMs": 60
+              },
+              {
+                "gpuMs": 74.011208,
+                "order": 0,
+                "trial": 5,
+                "wallMs": 75.69999999995343
+              },
+              {
+                "gpuMs": 97.574873,
+                "order": 0,
+                "trial": 6,
+                "wallMs": 99.5
+              }
+            ]
+          }
+        },
+        "workload": "createx-create3-guard2"
+      },
+      {
+        "invocations": 1024,
+        "protocol": "createx",
+        "variants": {
+          "current": {
+            "medianGpuMs": 114.69871,
+            "medianWallMs": 117.19999999995343,
+            "samples": [
+              {
+                "gpuMs": 114.69871,
+                "order": 0,
+                "trial": 0,
+                "wallMs": 117.19999999995343
+              },
+              {
+                "gpuMs": 131.644875,
+                "order": 0,
+                "trial": 1,
+                "wallMs": 135.10000000009313
+              },
+              {
+                "gpuMs": 178.948498,
+                "order": 0,
+                "trial": 2,
+                "wallMs": 182.89999999990687
+              },
+              {
+                "gpuMs": 278.305351,
+                "order": 0,
+                "trial": 3,
+                "wallMs": 286.80000000004657
+              },
+              {
+                "gpuMs": 34.606616,
+                "order": 0,
+                "trial": 4,
+                "wallMs": 35.300000000046566
+              },
+              {
+                "gpuMs": 34.699939,
+                "order": 0,
+                "trial": 5,
+                "wallMs": 36.199999999953434
+              },
+              {
+                "gpuMs": 34.806752,
+                "order": 0,
+                "trial": 6,
+                "wallMs": 36.299999999813735
+              }
+            ]
+          }
+        },
+        "workload": "createx-create2-guard3"
+      },
+      {
+        "invocations": 1024,
+        "protocol": "createx",
+        "variants": {
+          "current": {
+            "medianGpuMs": 34.800762,
+            "medianWallMs": 35.800000000046566,
+            "samples": [
+              {
+                "gpuMs": 34.649674,
+                "order": 0,
+                "trial": 0,
+                "wallMs": 35.800000000046566
+              },
+              {
+                "gpuMs": 39.105116,
+                "order": 0,
+                "trial": 1,
+                "wallMs": 40
+              },
+              {
+                "gpuMs": 35.073546,
+                "order": 0,
+                "trial": 2,
+                "wallMs": 35.800000000046566
+              },
+              {
+                "gpuMs": 35.353031,
+                "order": 0,
+                "trial": 3,
+                "wallMs": 36.699999999953434
+              },
+              {
+                "gpuMs": 34.662404,
+                "order": 0,
+                "trial": 4,
+                "wallMs": 35.9000000001397
+              },
+              {
+                "gpuMs": 34.800762,
+                "order": 0,
+                "trial": 5,
+                "wallMs": 35.699999999953434
+              },
+              {
+                "gpuMs": 34.497631,
+                "order": 0,
+                "trial": 6,
+                "wallMs": 35.10000000009313
+              }
+            ]
+          }
+        },
+        "workload": "createx-create3-guard3"
+      }
+    ],
+    "compileMs": [
+      {
+        "entrypoint": "verify",
+        "ms": 6809.300000000047,
+        "protocol": "create2",
+        "variant": "current"
+      },
+      {
+        "entrypoint": "verify",
+        "ms": 17105.40000000014,
+        "protocol": "safe",
+        "variant": "current"
+      },
+      {
+        "entrypoint": "verify",
+        "ms": 63376.89999999991,
+        "protocol": "createx",
+        "variant": "current"
+      },
+      {
+        "entrypoint": "production-main",
+        "ms": 11861.5,
+        "protocol": "create2",
+        "variant": "current"
+      },
+      {
+        "entrypoint": "production-main",
+        "ms": 18358.5,
+        "protocol": "safe",
+        "variant": "current"
+      },
+      {
+        "entrypoint": "production-main",
+        "ms": 63365.59999999986,
+        "protocol": "createx",
+        "variant": "current"
+      }
+    ],
+    "correctness": {
+      "casesPerVariant": 40,
+      "count": 40,
+      "nonces": ["0x12345678fffffffe", "0x12345678ffffffff", "0x1234567900000000", "0x1234567900000001"],
+      "passed": true,
+      "workloads": [
+        "create2",
+        "safe",
+        "createx-create2-guard0",
+        "createx-create3-guard0",
+        "createx-create2-guard1",
+        "createx-create3-guard1",
+        "createx-create2-guard2",
+        "createx-create3-guard2",
+        "createx-create2-guard3",
+        "createx-create3-guard3"
+      ]
+    },
+    "environment": {
+      "coreSha256": {
+        "current": "0fdad0234a2217f62e6e08b9f555b17551c3409e7c69997befb327899e103e81"
+      },
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "generatedAt": "2026-09-20T20:59:13.847Z",
+    "options": {
+      "dispatchX": 16,
+      "dispatchY": 1,
+      "powerPreference": "high-performance",
+      "timestamps": true,
+      "trials": 7,
+      "variants": ["current"],
+      "warmups": 3
+    },
+    "page": "http://localhost:5173/",
+    "schemaVersion": 1
+  },
+  "status": "done"
+}

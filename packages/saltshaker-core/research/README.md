@@ -1,6 +1,6 @@
 # WebGPU correctness and benchmark harness
 
-This browser-only harness compares a frozen baseline `core.wgsl` with the current production core. It uses the real production protocol, matcher, and kernel WGSL, and the production TypeScript job preparation/packing code.
+This browser-only harness compares frozen baseline core/CreateX shaders with production. It uses the real protocol, matcher, and kernel WGSL, and production TypeScript job preparation, buffer packing, and pipeline constants.
 
 ## Freeze the baseline
 
@@ -9,17 +9,21 @@ Before changing the production core, run from the repository root:
 ```sh
 cp packages/saltshaker-core/src/gpu/shaders/common/core.wgsl \
   packages/saltshaker-core/research/baseline.wgsl
+cp packages/saltshaker-core/src/gpu/shaders/protocols/createx.wgsl \
+  packages/saltshaker-core/research/baseline-createx.wgsl
 ```
 
-`baseline.wgsl` is intentionally ignored by `research/.gitignore`: it is experiment input, not a second maintained shader. To preserve or share a particular experiment, record the baseline commit SHA with the returned JSON (the result includes the current page URL and options), or explicitly force-add the frozen file if desired.
+Both baseline files are intentionally ignored by `research/.gitignore`: they are experiment inputs, not second maintained shaders. To preserve or share an experiment, record the baseline commit SHA with the returned JSON (the result includes the current page URL and options).
 
-The harness can run without this file only when `variants` is `["current"]` and no `experiment` is supplied.
+The harness can run without these files only when `variants` is `["current"]` and no `experiment` is supplied.
 
 To reproduce the original optimization baseline after checking out this branch:
 
 ```sh
 git show 06445c5712df561e95fefc89499317619ae97dbe:packages/saltshaker-core/src/gpu/shaders/common/core.wgsl \
   > packages/saltshaker-core/research/baseline.wgsl
+git show 06445c5712df561e95fefc89499317619ae97dbe:packages/saltshaker-core/src/gpu/shaders/protocols/createx.wgsl \
+  > packages/saltshaker-core/research/baseline-createx.wgsl
 ```
 
 ## Serve and run
@@ -56,9 +60,11 @@ const attempts = await window.runAutoresearch({ warmups: 3, trials: 15, dispatch
 copy(JSON.stringify(attempts, null, 2));
 ```
 
-The default sweep tests constant-index input/output with 24 (fully unrolled), 1, 2, 4, 6, 8, and 12 rounds per loop iteration. Every candidate is generated from the frozen baseline, not from the previous candidate. A correctness failure excludes that attempt from performance ranking. Each completed attempt is checkpointed in `localStorage["saltshaker-autoresearch"]`; current progress is in `window.researchProgress` and `window.autoresearchAttempts`. Keep this tab open and run only one experiment at a time. Editing files does not reload the page; reload manually between source changes.
+The default sweep first tests removing redundant state clearing from the 85-byte helper (`create2ZeroInit`) and from all helpers (`implicitZeroInit`), then constant-index input/output with 24 (fully unrolled), 1, 2, 4, 6, 8, and 12 rounds per loop iteration. Every candidate is generated from the frozen baseline, not from the previous candidate. A correctness failure excludes that attempt from performance ranking. Each completed attempt is checkpointed in `localStorage["saltshaker-autoresearch"]`; current progress is in `window.researchProgress` and `window.autoresearchAttempts`. Keep this tab open and run only one experiment at a time. Editing files does not reload the page; reload manually between source changes.
 
 The second argument selects experiments, for example `[{ roundsPerIteration: 2 }, { staticIO: true }]`. `workloads: ["create2"]` limits a pilot to one workload; omit it for the full ten-workload matrix. Experiments change only the research candidate, never production files.
+
+Core sweeps hold the baseline protocol source fixed to isolate core changes. A normal `runResearch` without `experiment` compares the full production change, including CreateX specialization. Pipelines are cached separately for each guard/operation pair, and compilation records include the complete shader hash and override values.
 
 Use geometric speedup to rank candidates, and inspect `worstSpeedup` for regressions hidden by the average. Repeat the finalists with larger dispatches and more trials on target hardware. Require a reproducible improvement beyond sample noise with no important workload regression before promoting a change. Compilation timings can include driver caches and are diagnostic, not cold-start guarantees. The sweep does not automatically promote a winner or treat software-adapter rankings as hardware rankings.
 
@@ -89,3 +95,33 @@ This isolates hashing throughput: it does not validate best-result publication u
 Any shader compilation message with severity `error`, WebGPU error scope failure, uncaptured GPU error, device loss, CPU/GPU mismatch, or cleanup-path execution error rejects `runResearch` and is printed visibly by the page. Resources and the device are destroyed in `finally` blocks.
 
 This harness reports measurements, not a hardware-performance claim. In particular, the development orb has no `/dev/dri`; run the browser benchmark on the target hardware.
+
+## Experiment log (2026-09-20)
+
+Raw samples, adapter/browser information, options, correctness counts, source SHA-256 hashes, and compilation timings are in `results/`. These are **SwiftShader software-adapter results**, not physical GPU benchmarks.
+
+1. `swiftshader-sweep.json`: seven CREATE2 candidates, 1,024 invocations, two warmups and seven alternating samples. Static input/output indexing with full round unrolling measured 1.110× baseline throughput. Round factors 1/2/4/6/8/12 measured 0.978×/0.873×/0.834×/0.834×/0.814×/0.924×. Reject shorter round loops on this evidence.
+2. `swiftshader-confirmation.json`: hand-written constant-index input/output, 8,192 invocations, five warmups and 21 samples. CREATE2 improved from 13.886 to 12.715 ms, but Safe regressed from 31.882 to 32.925 ms. Reject the combined change; do not select a winner using CREATE2 alone.
+3. `swiftshader-zero-init.json`: remove only redundant state-clearing loops, 8,192 invocations, ten warmups and 31 samples. CREATE2 improved from 14.141 to 13.495 ms (1.048× throughput), and Safe from 32.297 to 31.267 ms (1.033×). Preserve input/output and round-loop structure.
+4. `swiftshader-full-matrix-failure.json` and `swiftshader-single-variant-failure.json`: the all-helper candidate caused the GPU process to exit during CreateX verification-pipeline compilation, both paired with baseline and alone in a fresh browser with the watchdog disabled. The paired run had completed baseline correctness first. Reject broad clearing-loop removal despite the CREATE2/Safe timings; narrow the change to the 85-byte helper instead. These failures do not establish whether the cause was compiler memory use or another backend fault.
+5. `swiftshader-create2-zero-init.json`: restrict implicit initialization to the 85-byte helper, leaving all other helpers unchanged. All 40 CPU/GPU address comparisons and all ten production workloads passed. This run predates CreateX pipeline specialization and measures only the current candidate, not a paired speedup.
+6. `swiftshader-specialized.json`: final paired comparison against the original core and CreateX shader. The candidate combines 85-byte implicit initialization with per-job CreateX guard/operation overrides. All **80 address comparisons** passed. Each variant/workload used 4,096 invocations, ten warmups, and 21 alternating timed samples. Every workload improved in this run:
+
+| Workload                 | Baseline GPU ms | Candidate GPU ms | Throughput ratio |
+| ------------------------ | --------------: | ---------------: | ---------------: |
+| CREATE2                  |           8.078 |            7.426 |           1.088× |
+| Safe                     |          20.284 |           18.152 |           1.117× |
+| CreateX CREATE2, guard 0 |         136.629 |           17.533 |           7.793× |
+| CreateX CREATE3, guard 0 |         142.535 |           43.675 |           3.264× |
+| CreateX CREATE2, guard 1 |         142.748 |           17.081 |           8.357× |
+| CreateX CREATE3, guard 1 |         138.479 |           38.312 |           3.615× |
+| CreateX CREATE2, guard 2 |         137.697 |           14.757 |           9.331× |
+| CreateX CREATE3, guard 2 |         137.889 |           40.786 |           3.381× |
+| CreateX CREATE2, guard 3 |         142.050 |           17.040 |           8.336× |
+| CreateX CREATE3, guard 3 |         137.761 |           38.954 |           3.537× |
+
+Guard modes are unprotected (0), caller (1), chain (2), and caller plus chain (3). CreateX production-pipeline compilation was 64.36 seconds for the baseline and 41.21–55.40 seconds per specialized pipeline. These are diagnostic compile timings, not a cache-controlled cold-start comparison.
+
+The final software runs used Chromium flags `--enable-unsafe-webgpu --use-angle=swiftshader --disable-gpu-watchdog`. Physical-GPU runs should use their normal hardware backend, not SwiftShader. To reproduce the final comparison, use `runResearch({ warmups: 10, trials: 21, dispatchX: 64 })` without an `experiment` option. Increase dispatch size on faster physical adapters if timestamp samples are too short.
+
+These runs include noisy samples and changing CPU load. Treat small differences as provisional until repeated on the target GPU. The retained changes remove a redundant initialization loop and let the compiler discard CreateX branches that cannot execute for the prepared job. They do not introduce adapter-specific tuning or change hashing semantics. Existing best-result publication and custom 2D-dispatch coverage are outside this experiment.
