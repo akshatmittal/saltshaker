@@ -11,7 +11,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf .output .tanstack dist"
+    "clean": "rm -rf .output .tanstack dist",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@akshatmittal/saltshaker": "workspace:*",

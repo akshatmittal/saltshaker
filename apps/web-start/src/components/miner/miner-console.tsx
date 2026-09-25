@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 
 import {
   createMiningSession,
+  encodeSafeInitializer,
   type AddressMatcherSpec,
   type CreateXOperation,
   type MatcherKind,
   type MiningJob,
 } from "@akshatmittal/saltshaker";
 import { AlignLeft, AlignRight, ChevronDown, ChevronUp, Copy, Hash, Search, Settings } from "lucide-react";
-import { toHex, type Hex } from "viem";
+import { getAddress, toHex, type Address, type Hex } from "viem";
 
 import { EmptyState, TelemetryCard } from "@/components/miner/shared";
 import { WorkbenchLayout } from "@/components/miner/workbench-layout";
@@ -29,6 +30,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useMiningSession } from "@/hooks/use-mining-session";
+import { SAFE_PRESETS, ZERO_ADDRESS, encodeSafeDeployment, type SafePreset } from "@/lib/safe-presets";
 import { STANDARDIZED_CREATE2_BENCHMARK_PRESET } from "@/lib/standardized-create2-benchmark-preset";
 import { cn } from "@/lib/utils";
 
@@ -41,12 +43,7 @@ const MATCHER_OPTIONS: { type: MatcherKind; icon: React.ElementType; label: stri
   { type: "contains", icon: Search, label: "Contains" },
 ];
 
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000" as const;
 const DEFAULT_CREATEX_FACTORY = "0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed" as const;
-const DEFAULT_SAFE_FACTORY = "0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2" as const;
-const DEFAULT_SAFE_FALLBACK_HANDLER = "0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4" as const;
-const DEFAULT_SAFE_PROXY_CREATION_CODE_HASH =
-  "0xcaf2dc2f91b804b2fcf1ed3a965a1ff4404b840b80c124277b00a43b4634b2ce" as const;
 const CREATE2_FIXED_SALT_PREFIX_BYTES = 24;
 
 type Create2FormState = {
@@ -56,6 +53,9 @@ type Create2FormState = {
 };
 
 type SafeFormState = {
+  singleton: string;
+  to: string;
+  data: string;
   owners: string;
   threshold: string;
   fallbackHandler: string;
@@ -81,9 +81,7 @@ const defaultCreate2: Create2FormState = {
 const defaultSafe: SafeFormState = {
   owners: ["0x0000000000000000000000000000000000000001", "0x0000000000000000000000000000000000000002"].join("\n"),
   threshold: "2",
-  fallbackHandler: DEFAULT_SAFE_FALLBACK_HANDLER,
-  factory: DEFAULT_SAFE_FACTORY,
-  proxyCreationCodeHash: DEFAULT_SAFE_PROXY_CREATION_CODE_HASH,
+  ...SAFE_PRESETS["1.3.0"],
 };
 
 const defaultCreateX: CreateXFormState = {
@@ -121,6 +119,13 @@ export function MinerConsole() {
   const [protocol, setProtocol] = useState<Protocol>("create2");
   const [create2Form, setCreate2Form] = useState(defaultCreate2);
   const [safeForm, setSafeForm] = useState(defaultSafe);
+  const [safePreset, setSafePreset] = useState<SafePreset>("1.3.0");
+  const [multiChain, setMultiChain] = useState(false);
+  const [safeDeployment, setSafeDeployment] = useState<{
+    singleton: Address;
+    initializer: Hex;
+    factory: Address;
+  } | null>(null);
   const [createXForm, setCreateXForm] = useState(defaultCreateX);
   const [matcher, setMatcher] = useState(defaultMatcher);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -143,7 +148,43 @@ export function MinerConsole() {
   }
 
   function updateSafe<K extends keyof SafeFormState>(key: K, value: SafeFormState[K]) {
-    setSafeForm((current) => ({ ...current, [key]: value }));
+    if (key !== "owners" && key !== "threshold") setSafePreset("custom");
+    if (key === "to" || key === "data") setMultiChain(false);
+    setSafeForm((current) => ({
+      ...current,
+      [key]: value,
+      ...(key === "singleton" ? { proxyCreationCodeHash: "" } : {}),
+    }));
+  }
+
+  function selectSafePreset(preset: SafePreset) {
+    setSafePreset(preset);
+    if (preset === "custom") return;
+    const values = SAFE_PRESETS[preset];
+    const enabled = multiChain && preset !== "1.3.0";
+    setMultiChain(enabled);
+    setSafeForm((current) => ({
+      ...current,
+      ...values,
+      to: enabled ? values.to : ZERO_ADDRESS,
+      data: enabled ? values.data : "0x",
+    }));
+  }
+
+  function toggleMultiChain(enabled: boolean) {
+    if (!enabled) {
+      setMultiChain(false);
+      setSafeForm((current) => ({ ...current, to: ZERO_ADDRESS, data: "0x" }));
+      return;
+    }
+    if (safePreset === "custom" || safePreset === "1.3.0") return;
+    const values = SAFE_PRESETS[safePreset];
+    setMultiChain(enabled);
+    setSafeForm((current) => ({
+      ...current,
+      to: enabled ? values.to : ZERO_ADDRESS,
+      data: enabled ? values.data : "0x",
+    }));
   }
 
   function updateCreateX<K extends keyof CreateXFormState>(key: K, value: CreateXFormState[K]) {
@@ -246,18 +287,14 @@ export function MinerConsole() {
       protocol: "safe",
       owners,
       threshold: BigInt(safeForm.threshold || "1"),
-      to: ZERO_ADDRESS,
-      data: "0x",
-      fallbackHandler:
-        safeForm.fallbackHandler.trim() === ""
-          ? DEFAULT_SAFE_FALLBACK_HANDLER
-          : (safeForm.fallbackHandler as `0x${string}`),
+      to: (safeForm.to.trim() || ZERO_ADDRESS) as Address,
+      data: normalizeHexInput(safeForm.data) ?? "0x",
+      fallbackHandler: (safeForm.fallbackHandler.trim() || ZERO_ADDRESS) as Address,
       paymentToken: ZERO_ADDRESS,
       payment: 0n,
       paymentReceiver: ZERO_ADDRESS,
-      factory: safeForm.factory.trim() === "" ? DEFAULT_SAFE_FACTORY : (safeForm.factory as `0x${string}`),
-      proxyCreationCodeHash: (normalizeHexInput(safeForm.proxyCreationCodeHash) ??
-        DEFAULT_SAFE_PROXY_CREATION_CODE_HASH) as `0x${string}`,
+      factory: safeForm.factory.trim() as Address,
+      proxyCreationCodeHash: normalizeHexInput(safeForm.proxyCreationCodeHash) ?? "0x",
     };
   }
 
@@ -271,7 +308,17 @@ export function MinerConsole() {
 
     try {
       stopSession();
-      const session = createMiningSession({ job: buildJob(), matcher: buildMatcher(), maxResults });
+      const job = buildJob();
+      const deployment =
+        job.protocol === "safe"
+          ? {
+              singleton: getAddress(safeForm.singleton.trim()),
+              initializer: encodeSafeInitializer(job),
+              factory: getAddress(job.factory),
+            }
+          : null;
+      const session = createMiningSession({ job, matcher: buildMatcher(), maxResults });
+      setSafeDeployment(deployment);
       setActiveSession(session);
       subscribeToSession(session);
       void session.start().catch((startError: unknown) => {
@@ -431,6 +478,40 @@ export function MinerConsole() {
               ) : (
                 <div className="grid gap-4">
                   <Field>
+                    <FieldLabel>Safe Version</FieldLabel>
+                    <NativeSelect
+                      value={safePreset}
+                      onChange={(event) => selectSafePreset(event.target.value as SafePreset)}
+                      className="w-full"
+                    >
+                      {Object.keys(SAFE_PRESETS).map((version) => (
+                        <NativeSelectOption
+                          key={version}
+                          value={version}
+                        >
+                          v{version} canonical
+                        </NativeSelectOption>
+                      ))}
+                      <NativeSelectOption value="custom">Custom</NativeSelectOption>
+                    </NativeSelect>
+                  </Field>
+                  <Field>
+                    <FieldLabel>Multi-chain (SafeToL2Setup)</FieldLabel>
+                    <NativeSelect
+                      value={multiChain ? "enabled" : "disabled"}
+                      disabled={!multiChain && (safePreset === "custom" || safePreset === "1.3.0")}
+                      onChange={(event) => toggleMultiChain(event.target.value === "enabled")}
+                      className="w-full"
+                    >
+                      <NativeSelectOption value="disabled">Disabled</NativeSelectOption>
+                      <NativeSelectOption value="enabled">Enabled</NativeSelectOption>
+                    </NativeSelect>
+                    <FieldDescription>
+                      Available with v1.4.1 and v1.5.0 presets. Switches to SafeL2 during setup on non-mainnet chains.
+                      Custom setup can be entered under Advanced.
+                    </FieldDescription>
+                  </Field>
+                  <Field>
                     <FieldLabel>Owners</FieldLabel>
                     <Textarea
                       rows={4}
@@ -460,6 +541,34 @@ export function MinerConsole() {
                     </Button>
                     {showAdvanced && (
                       <div className="mt-4 grid gap-4">
+                        <Field>
+                          <FieldLabel>Singleton</FieldLabel>
+                          <Input
+                            value={safeForm.singleton}
+                            onChange={(event) => updateSafe("singleton", event.target.value)}
+                            className="font-mono"
+                          />
+                          <FieldDescription>
+                            Changing the singleton clears the hash. Supply keccak256(proxyCreationCode ++
+                            abi.encode(singleton)).
+                          </FieldDescription>
+                        </Field>
+                        <Field>
+                          <FieldLabel>Setup Target (to)</FieldLabel>
+                          <Input
+                            value={safeForm.to}
+                            onChange={(event) => updateSafe("to", event.target.value)}
+                            className="font-mono"
+                          />
+                        </Field>
+                        <Field>
+                          <FieldLabel>Setup Data (data)</FieldLabel>
+                          <Textarea
+                            value={safeForm.data}
+                            onChange={(event) => updateSafe("data", event.target.value)}
+                            className="font-mono"
+                          />
+                        </Field>
                         <Field>
                           <FieldLabel>Factory</FieldLabel>
                           <Input
@@ -665,13 +774,47 @@ export function MinerConsole() {
                         </div>
                         <div className="flex min-w-0 items-center gap-2">
                           <p className="min-w-0 flex-1 truncate font-mono text-sm text-muted-foreground">
-                            {result.salt}
+                            Salt: {result.salt}
                           </p>
                           <CopyValueButton
                             value={result.salt}
                             label="Copy salt"
                           />
                         </div>
+                        <div className="flex min-w-0 items-center gap-2">
+                          <p className="min-w-0 flex-1 font-mono text-sm text-muted-foreground">
+                            {safeDeployment ? "saltNonce" : "Nonce"} (uint256): {result.nonce.toString()}
+                          </p>
+                          <CopyValueButton
+                            value={result.nonce.toString()}
+                            label="Copy nonce"
+                          />
+                        </div>
+                        {safeDeployment && (
+                          <div className="space-y-1">
+                            <p className="font-mono text-xs break-all text-muted-foreground">
+                              Factory: {safeDeployment.factory}
+                            </p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                void navigator.clipboard
+                                  .writeText(
+                                    encodeSafeDeployment(
+                                      safeDeployment.singleton,
+                                      safeDeployment.initializer,
+                                      result.nonce,
+                                    ),
+                                  )
+                                  .catch(() => setError("Could not copy calldata to clipboard."))
+                              }
+                            >
+                              <Copy />
+                              Copy calldata
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
