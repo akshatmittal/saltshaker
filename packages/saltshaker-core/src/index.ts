@@ -1,3 +1,4 @@
+export { encodeSafeInitializer } from "./protocols/safe";
 export { checkWebGpuSupport, createMiningSession } from "./session";
 export type {
   AddressMatcherSpec,

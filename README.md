@@ -174,3 +174,22 @@ pnpm lint
 - `pnpm@10`
 - A browser with WebGPU support for actual mining
 - `viem` as a peer dependency of the `@akshatmittal/saltshaker` package
+
+### Deploying a mined Safe
+
+Select a canonical Safe v1.3.0, v1.4.1, or v1.5.0 preset, then enter owners and threshold.
+The v1.4.1 and v1.5.0 presets can enable **Multi-chain (SafeToL2Setup)** to switch to
+SafeL2 during setup on non-mainnet chains. Advanced fields allow custom setup targets
+and data. Confirm the selected contracts are deployed on each intended chain.
+
+Results show both the derived salt and the decimal **saltNonce**. Use saltNonce with
+`createProxyWithNonce`, or choose **Copy calldata** and send it to the factory shown
+with the result. Calldata stays tied to the original mining configuration when the form
+is edited. The app does not send transactions.
+
+The proxy creation code hash includes the singleton constructor argument:
+`keccak256(proxyCreationCode() ++ abi.encode(singleton))`. Editing the singleton clears
+the hash so a matching custom hash must be supplied. Canonical preset addresses come
+from [Safe deployments](https://github.com/safe-global/safe-deployments/tree/main/src/assets);
+hashes were checked against mainnet factories. The v1.3.0 preset uses the canonical L1
+singleton and its corresponding hash, correcting the previous UI default.
