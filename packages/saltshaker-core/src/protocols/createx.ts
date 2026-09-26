@@ -1,9 +1,9 @@
-import { concat, encodeAbiParameters, getAddress, keccak256, type Hex } from "viem";
+import { concat, encodeAbiParameters, getAddress, keccak256, zeroAddress, type Hex } from "viem";
 
 import type { PreparedCreateXJob } from "../internal/types";
 import type { CreateXJobInput, MiningResult } from "../types";
 
-import { CREATE3_PROXY_CHILD_CODE_HASH, FIXED_SALT_PREFIX_BYTES, ZERO_ADDRESS } from "../constants";
+import { CREATE3_PROXY_CHILD_CODE_HASH, FIXED_SALT_PREFIX_BYTES } from "../constants";
 import { addressFromHash, countLeadingZeroNibbles, ensureAddress } from "../internal/address";
 import { assert } from "../internal/assert";
 import { bytesToHex, hexToBytes, normalizeHex } from "../internal/hex";
@@ -30,12 +30,12 @@ function prepareCaller(caller: string | undefined): { caller: `0x${string}` | nu
   if (caller === undefined) {
     return {
       caller: null,
-      callerBytes: hexToBytes(ZERO_ADDRESS),
+      callerBytes: hexToBytes(zeroAddress),
     };
   }
 
   const normalizedCaller = ensureAddress(caller, "CreateX caller");
-  assert(normalizedCaller !== ZERO_ADDRESS, "CreateX caller must be a non-zero address");
+  assert(normalizedCaller !== zeroAddress, "CreateX caller must be a non-zero address");
 
   return {
     caller: normalizedCaller,
@@ -82,7 +82,7 @@ function resolveCreateXGuardMode(
     throw new Error("CreateX salt flag must be 0x00 or 0x01 when the salt is caller-protected");
   }
 
-  if (sender === ZERO_ADDRESS) {
+  if (sender === zeroAddress) {
     if (redeployProtectionFlag === 0x01) {
       assert(chainId !== null, "CreateX chain ID is required when crosschain protection is enabled");
       return CREATE_X_GUARD_XCHAIN;

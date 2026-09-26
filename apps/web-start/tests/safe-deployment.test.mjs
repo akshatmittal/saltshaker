@@ -1,9 +1,9 @@
 import { encodeSafeInitializer } from "@akshatmittal/saltshaker";
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { decodeFunctionData, encodeAbiParameters, getCreate2Address, keccak256, parseAbi } from "viem";
+import { decodeFunctionData, encodeAbiParameters, getCreate2Address, keccak256, parseAbi, zeroAddress } from "viem";
 
-import { SAFE_PRESETS, ZERO_ADDRESS, encodeSafeDeployment } from "../src/lib/safe-presets.ts";
+import { SAFE_PRESETS, encodeSafeDeployment } from "../src/lib/safe-presets.ts";
 
 const factoryAbi = parseAbi([
   "function createProxyWithNonce(address singleton, bytes initializer, uint256 saltNonce) returns (address proxy)",
@@ -16,11 +16,11 @@ test("copied deployment calldata reproduces the known mainnet Safe", () => {
     protocol: "safe",
     owners: ["0x33333333Bd7045F1A601A1E289D7AB21036fB5EF"],
     threshold: 1n,
-    to: ZERO_ADDRESS,
+    to: zeroAddress,
     data: "0x",
-    paymentToken: ZERO_ADDRESS,
+    paymentToken: zeroAddress,
     payment: 0n,
-    paymentReceiver: ZERO_ADDRESS,
+    paymentReceiver: zeroAddress,
   });
   const calldata = encodeSafeDeployment(preset.singleton, initializer, 338113103878n);
   const decoded = decodeFunctionData({ abi: factoryAbi, data: calldata });

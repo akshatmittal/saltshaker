@@ -1,6 +1,4 @@
-import { encodeFunctionData, parseAbi, type Address, type Hex } from "viem";
-
-export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+import { encodeFunctionData, parseAbi, zeroAddress, type Address, type Hex } from "viem";
 
 // Canonical deployments: https://github.com/safe-global/safe-deployments/tree/main/src/assets
 // The proxy hash includes the ABI-encoded L1 singleton, not just proxyCreationCode().
@@ -10,7 +8,7 @@ export const SAFE_PRESETS = {
     singleton: "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
     fallbackHandler: "0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4",
     proxyCreationCodeHash: "0x56e3081a3d1bb38ed4eed1a39f7729c3cc77c7825794c15bbf326f3047fd779c",
-    to: ZERO_ADDRESS,
+    to: zeroAddress,
     data: "0x",
   },
   "1.4.1": {

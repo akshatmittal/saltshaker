@@ -1,21 +1,20 @@
-import { keccak256 } from "viem";
+import { keccak256, zeroAddress } from "viem";
 import { describe, expect, it } from "vitest";
 
 import type { SafeJobInput } from "../types";
 
 import { computeSafeSalt, deriveSafeResult, encodeSafeInitializer, prepareSafeJob } from "./safe";
 
-const zero = "0x0000000000000000000000000000000000000000";
 const input: SafeJobInput = {
   protocol: "safe",
   owners: ["0x33333333Bd7045F1A601A1E289D7AB21036fB5EF"],
   threshold: 1n,
-  to: zero,
+  to: zeroAddress,
   data: "0x",
   fallbackHandler: "0x3EfCBb83A4A7AfcB4F68D501E2c2203a38be77f4",
-  paymentToken: zero,
+  paymentToken: zeroAddress,
   payment: 0n,
-  paymentReceiver: zero,
+  paymentReceiver: zeroAddress,
   factory: "0x14F2982D601c9458F93bd70B218933A6f8165e7b",
   proxyCreationCodeHash: "0x9dd695a8d96e2c0f6ede304e13cc2efe754fa353b7389a23340c9317113bc975",
 };

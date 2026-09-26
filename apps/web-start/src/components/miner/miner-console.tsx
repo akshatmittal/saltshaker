@@ -9,7 +9,7 @@ import {
   type MiningJob,
 } from "@akshatmittal/saltshaker";
 import { AlignLeft, AlignRight, ChevronDown, ChevronUp, Copy, Hash, Search, Settings } from "lucide-react";
-import { getAddress, toHex, type Address, type Hex } from "viem";
+import { getAddress, toHex, zeroAddress, type Address, type Hex } from "viem";
 
 import { EmptyState, TelemetryCard } from "@/components/miner/shared";
 import { WorkbenchLayout } from "@/components/miner/workbench-layout";
@@ -30,7 +30,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useMiningSession } from "@/hooks/use-mining-session";
-import { SAFE_PRESETS, ZERO_ADDRESS, encodeSafeDeployment, type SafePreset } from "@/lib/safe-presets";
+import { SAFE_PRESETS, encodeSafeDeployment, type SafePreset } from "@/lib/safe-presets";
 import { STANDARDIZED_CREATE2_BENCHMARK_PRESET } from "@/lib/standardized-create2-benchmark-preset";
 import { cn } from "@/lib/utils";
 
@@ -166,7 +166,7 @@ export function MinerConsole() {
     setSafeForm((current) => ({
       ...current,
       ...values,
-      to: enabled ? values.to : ZERO_ADDRESS,
+      to: enabled ? values.to : zeroAddress,
       data: enabled ? values.data : "0x",
     }));
   }
@@ -174,7 +174,7 @@ export function MinerConsole() {
   function toggleMultiChain(enabled: boolean) {
     if (!enabled) {
       setMultiChain(false);
-      setSafeForm((current) => ({ ...current, to: ZERO_ADDRESS, data: "0x" }));
+      setSafeForm((current) => ({ ...current, to: zeroAddress, data: "0x" }));
       return;
     }
     if (safePreset === "custom" || safePreset === "1.3.0") return;
@@ -182,7 +182,7 @@ export function MinerConsole() {
     setMultiChain(enabled);
     setSafeForm((current) => ({
       ...current,
-      to: enabled ? values.to : ZERO_ADDRESS,
+      to: enabled ? values.to : zeroAddress,
       data: enabled ? values.data : "0x",
     }));
   }
@@ -236,7 +236,7 @@ export function MinerConsole() {
   }
 
   function buildCreateXFixedSaltPrefix(): `0x${string}` {
-    const caller = normalizeAddressInput(createXForm.caller) ?? ZERO_ADDRESS;
+    const caller = normalizeAddressInput(createXForm.caller) ?? zeroAddress;
     const replayProtectionFlag = createXForm.crosschainReplayProtection ? "01" : "00";
     return buildFixedSaltPrefix(`0x${caller.slice(2)}${replayProtectionFlag}`);
   }
@@ -287,12 +287,12 @@ export function MinerConsole() {
       protocol: "safe",
       owners,
       threshold: BigInt(safeForm.threshold || "1"),
-      to: (safeForm.to.trim() || ZERO_ADDRESS) as Address,
+      to: (safeForm.to.trim() || zeroAddress) as Address,
       data: normalizeHexInput(safeForm.data) ?? "0x",
-      fallbackHandler: (safeForm.fallbackHandler.trim() || ZERO_ADDRESS) as Address,
-      paymentToken: ZERO_ADDRESS,
+      fallbackHandler: (safeForm.fallbackHandler.trim() || zeroAddress) as Address,
+      paymentToken: zeroAddress,
       payment: 0n,
-      paymentReceiver: ZERO_ADDRESS,
+      paymentReceiver: zeroAddress,
       factory: safeForm.factory.trim() as Address,
       proxyCreationCodeHash: normalizeHexInput(safeForm.proxyCreationCodeHash) ?? "0x",
     };
